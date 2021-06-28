@@ -1,5 +1,8 @@
 import numpy as np
 import yfinance as yf
+import time
+import cvxpy as cp
+
 import estimation as est
 import optimization as opt
 
@@ -29,6 +32,7 @@ class Engine:
                                       end = self.period[1])
             self.prices = self.prices.loc[:, ('Adj Close', slice(None))]
             self.returns = self.prices.pct_change().dropna().to_numpy()
+            self.dates = self.prices.index[1:]
         except AssertionError:
             print('You need to provide start and end dates!')
 
@@ -66,7 +70,16 @@ class Portfolio(Engine):
     def set_estimation_method(self, moment: int, function):
         self.estimation_method[moment] = function
 
-    def historical_backtest(self, models = ['EW'], frequency = 22,
+    #todo implement constraints (long-only, leverage, weight etc.)
+    def set_constraints(self, constraint_dict: dict, default = True):
+        if default:
+            self.constraints = {'long_only': True,
+                                'leverage': 1,
+                                'normalizing': True}
+        else:
+            self.constraints = constraint_dict
+
+    def historical_backtest(self, models = ['EW', 'GMV'], frequency = 22,
                  estimation_period = 252, *args, **kwargs):
         self.backtest = {}
         self.estimates = {'exp_value' : [],
@@ -87,16 +100,19 @@ class Portfolio(Engine):
         for model in models:
             model_results = {'weights': [],
                              'returns': [],
-                             'opt time': 0.}
-            #todo implement timer!!
+                             'opt_time': 0.}
+            tic = time.perf_counter()
             num_rebalance = 0
 
             for trade in range(estimation_period, self.returns.shape[0], frequency):
                 #solve optimization starting with start_weights
+                mu = self.estimates['exp_value'][num_rebalance]
+                sigma = self.estimates['cov_matrix'][num_rebalance]
+
                 if num_rebalance == 0:
                     w_t = self.start_weights
                 else:
-                    w_t = self._rebalance(model)
+                    w_t = self._rebalance(mu, sigma, model)
                 #todo implement transaction costs
                 #get current prices and compute returns
                 p_t = self._get_state(trade, trade + frequency)
@@ -107,16 +123,17 @@ class Portfolio(Engine):
                 num_rebalance += 1
 
             model_results['returns'] = np.vstack(model_results['returns'])
-            model_results['weights'] = np.vstack(model_results['weights'])
+            toc = time.perf_counter()
+            model_results['opt_time'] = toc - tic
             self.backtest[model] = model_results
 
-
-
-    def _rebalance(self, opt_problem: str, **kwargs):
+    def _rebalance(self, mu, sigma,
+                   opt_problem: str):
         if opt_problem == 'EW':
             w_opt = np.full((self.size, 1), 1/self.size)
         if opt_problem == 'GMV':
-            w_opt = opt.global_minimum_variance()
+            w_opt = opt.global_minimum_variance(sigma, self.constraints, self.size)
+        w_opt = w_opt.reshape(self.size, 1)
         return w_opt
 
     def _estimate(self, estimator, p_est, *args, **kwargs):
