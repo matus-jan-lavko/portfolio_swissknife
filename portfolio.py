@@ -42,6 +42,8 @@ class Portfolio(Engine):
         super().__init__(securities)
 
         self.start_weights = start_weights
+        #initialize estimation methods to simple returns
+        self.estimation_method = [est.mean_return_historic, est.sample_cov]
 
         if self.start_weights is not None:
             self.start_weights = start_weights
@@ -49,6 +51,7 @@ class Portfolio(Engine):
             #initialize to equal weights
             self.start_weights = np.empty(self.size, dtype=float)
             self.start_weights.fill(1/self.size)
+        self.start_weights = self.start_weights.reshape(self.size, 1)
 
     def __call__(self):
         return f'This is a Portfolio spanning from {self.period[0]} to {self.period[1]}.' \
@@ -60,27 +63,49 @@ class Portfolio(Engine):
     def set_transaction_cost(self, transaction_cost = '0.005'):
         self.transaction_cost = transaction_cost
 
-    def backtest(self, models = ['EW'], frequency = 22, estimation_period = 252):
+    def set_estimation_method(self, moment: int, function):
+        self.estimation_method[moment] = function
+
+    def historical_backtest(self, models = ['EW'], frequency = 22,
+                 estimation_period = 252, *args, **kwargs):
         self.backtest = {}
+        self.estimates = {'exp_value' : [],
+                          'cov_matrix' : []}
+
+        #estimation
+        for trade in range(estimation_period, self.returns.shape[0], frequency):
+            # estimate necessary params
+            p_est = self._get_state(trade - estimation_period, trade)
+
+            self.estimates['exp_value'].append(self._estimate(self.estimation_method[0],
+                                                              p_est , *args, **kwargs))
+
+            self.estimates['cov_matrix'].append(self._estimate(self.estimation_method[1],
+                                                               p_est , *args, **kwargs))
+
+        #backtest logic
         for model in models:
             model_results = {'weights': [],
                              'returns': [],
                              'opt time': 0.}
             #todo implement timer!!
             num_rebalance = 0
-            #estimation warmup
 
             for trade in range(estimation_period, self.returns.shape[0], frequency):
-                #get current prices
+                #solve optimization starting with start_weights
+                if num_rebalance == 0:
+                    w_t = self.start_weights
+                else:
+                    w_t = self._rebalance(model)
+                #todo implement transaction costs
+                #get current prices and compute returns
                 p_t = self._get_state(trade, trade + frequency)
-                #solve optimization
-                w_t = self._rebalance(model)
-                #todo implementing transaction costs
                 r_t = np.dot(p_t, w_t)
 
                 model_results['returns'].append(r_t)
                 model_results['weights'].append(w_t)
                 num_rebalance += 1
+
             model_results['returns'] = np.vstack(model_results['returns'])
             model_results['weights'] = np.vstack(model_results['weights'])
             self.backtest[model] = model_results
@@ -92,14 +117,13 @@ class Portfolio(Engine):
             w_opt = np.full((self.size, 1), 1/self.size)
         if opt_problem == 'GMV':
             w_opt = opt.global_minimum_variance()
-
-        else:
-            raise ValueError
-
         return w_opt
 
-    def _estimate(self, moment):
-        raise NotImplementedError
+    def _estimate(self, estimator, p_est, *args, **kwargs):
+        moment = estimator(p_est, *args, **kwargs)
+        return moment
+
+
 
 
 
