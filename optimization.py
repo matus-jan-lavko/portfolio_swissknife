@@ -47,6 +47,15 @@ def risk_parity(sigma , constraints: dict, n_):
 def max_diversification_ratio():
     raise NotImplementedError
 
+def max_sharpe_ratio():
+    raise NotImplementedError
+
+def min_cvar():
+    raise NotImplementedError
+
+def _quadratic_risk_utility():
+    raise NotImplementedError
+
 def _portfolio_variance(w, sigma):
     w = np.matrix(w)
     sig_p = w * sigma * w.T

@@ -1,12 +1,20 @@
 import numpy as np
+import pandas as pd
 import yfinance as yf
 import time
 import cvxpy as cp
 
 import estimation as est
 import optimization as opt
+import plotting
 
 class Engine:
+    '''
+    Initializes the Engine superclass that supersedes both the Portfolio and Risk Model subclasses. Defines the general
+    data structure that fetches and stores data and retrieves states. Also sets the period for analysis that is
+    encapsulated within the class and a new class has to be instantiated in order to carry out analysis in different
+    time frames.
+    '''
     def __init__(self, securities: list):
         self.securities = securities
         self.size = int(len(self.securities))
@@ -66,10 +74,10 @@ class Portfolio(Engine):
         raise NotImplementedError
 
     def set_benchmark(self, benchmark: str):
-        self.benchmark = self.yf.download(benchmark,
-                                          start = self.period[0],
-                                          end = self.period[1])
-        self.benchmark = self.benchmark.loc[:, ('Adj Close', slice(None))]
+        self.benchmark = yf.download(benchmark,
+                                     start = self.period[0],
+                                     end = self.period[1])
+        self.benchmark = self.benchmark.loc[:,'Adj Close']
         self.benchmark = self.benchmark.pct_change().dropna().to_numpy()
 
     def set_transaction_cost(self, transaction_cost = '0.005'):
@@ -77,9 +85,6 @@ class Portfolio(Engine):
 
     def set_estimation_method(self, moment: int, function):
         self.estimation_method[moment] = function
-
-    def set_optimization_objective(self, token = 'MV'):
-        self.optimization_objective = token
 
     #todo implement constraints (long-only, leverage, weight etc.)
     def set_constraints(self, constraint_dict: dict, default = True):
@@ -92,6 +97,10 @@ class Portfolio(Engine):
 
     def historical_backtest(self, models = ['EW', 'GMV', 'RP'], frequency = 22,
                  estimation_period = 252, *args, **kwargs):
+        #caching backtest attributes
+        self.weighting_models = models
+        self.estimation_period = estimation_period
+
         self.backtest = {}
         self.estimates = {'exp_value' : [],
                           'cov_matrix' : []}
@@ -137,6 +146,16 @@ class Portfolio(Engine):
             toc = time.perf_counter()
             model_results['opt_time'] = toc - tic
             self.backtest[model] = model_results
+
+    def get_backtest_report(self):
+        #construct the dataframe
+        bt_rets =  pd.DataFrame({mod : self.backtest[mod]['returns'].flatten()
+                                 for mod in self.weighting_models},
+                                index = self.dates[self.estimation_period:])
+        bt_rets = (1+bt_rets).cumprod()
+        bmark_rets = (1+self.benchmark[self.estimation_period:]).cumprod()
+        #plot the returns
+        plotting.plot_returns(bt_rets, bmark_rets)
 
     def _rebalance(self, mu, sigma,
                    opt_problem: str):
