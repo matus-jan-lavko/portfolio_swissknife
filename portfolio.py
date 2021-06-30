@@ -56,6 +56,7 @@ class Portfolio(Engine):
             self.start_weights = np.empty(self.size, dtype=float)
             self.start_weights.fill(1/self.size)
         self.start_weights = self.start_weights.reshape(self.size, 1)
+        self.benchmark = None
 
     def __call__(self):
         return f'This is a Portfolio spanning from {self.period[0]} to {self.period[1]}.' \
@@ -64,11 +65,21 @@ class Portfolio(Engine):
     def __len__(self):
         raise NotImplementedError
 
+    def set_benchmark(self, benchmark: str):
+        self.benchmark = self.yf.download(benchmark,
+                                          start = self.period[0],
+                                          end = self.period[1])
+        self.benchmark = self.benchmark.loc[:, ('Adj Close', slice(None))]
+        self.benchmark = self.benchmark.pct_change().dropna().to_numpy()
+
     def set_transaction_cost(self, transaction_cost = '0.005'):
         self.transaction_cost = transaction_cost
 
     def set_estimation_method(self, moment: int, function):
         self.estimation_method[moment] = function
+
+    def set_optimization_objective(self, token = 'MV'):
+        self.optimization_objective = token
 
     #todo implement constraints (long-only, leverage, weight etc.)
     def set_constraints(self, constraint_dict: dict, default = True):
@@ -79,7 +90,7 @@ class Portfolio(Engine):
         else:
             self.constraints = constraint_dict
 
-    def historical_backtest(self, models = ['EW', 'GMV'], frequency = 22,
+    def historical_backtest(self, models = ['EW', 'GMV', 'RP'], frequency = 22,
                  estimation_period = 252, *args, **kwargs):
         self.backtest = {}
         self.estimates = {'exp_value' : [],
@@ -133,6 +144,8 @@ class Portfolio(Engine):
             w_opt = np.full((self.size, 1), 1/self.size)
         if opt_problem == 'GMV':
             w_opt = opt.global_minimum_variance(sigma, self.constraints, self.size)
+        if opt_problem == 'RP':
+            w_opt = opt.risk_parity(sigma,self.constraints, self.size)
         w_opt = w_opt.reshape(self.size, 1)
         return w_opt
 
