@@ -10,6 +10,7 @@ def global_minimum_variance(sigma, constraints: dict, n_):
     objective = cp.Minimize(risk * 1000)
     problem = cp.Problem(objective, constraint_list)
     problem.solve()
+
     w_opt = w.value
     return w_opt
 
@@ -41,20 +42,58 @@ def risk_parity(sigma , constraints: dict, n_):
     constraint_tup = _build_constraints_scipy(constraints)
     problem = minimize(risk_objective, b, args=[sigma, b], method='SLSQP',
                        constraints=constraint_tup, options={'disp': False})
+
     w_opt = np.array(problem.x)
     return w_opt
 
-def max_diversification_ratio():
+def max_diversification_ratio(sigma, w_prev, constraints: dict):
+    def diversification_ratio(w, sigma):
+        #average weighted volatility
+        w_vol = np.dot(np.sqrt(np.diag(sigma)), w.T)
+        #port vol
+        port_vol = np.sqrt(_portfolio_variance(w, sigma))
+        div_ratio = w_vol/port_vol
+        return (-div_ratio)
+
+    constraint_tup = _build_constraints_scipy(constraints)
+    problem = minimize(diversification_ratio, w_prev, args = sigma, method = 'SLSQP',
+                       constraints = constraint_tup, options={'disp': False})
+
+    w_opt = np.array(problem.x)
+    return w_opt
+
+
+def max_sharpe_ratio(efficient_frontier: list, function):
     raise NotImplementedError
 
-def max_sharpe_ratio():
+def min_cvar(efficient_frontier: list, function):
     raise NotImplementedError
 
-def min_cvar():
+def hierarchical_risk_parity():
     raise NotImplementedError
 
-def _quadratic_risk_utility():
-    raise NotImplementedError
+
+def _quadratic_risk_utility(mu, sigma, constraints: dict, n_, grid_size = 100):
+    w = cp.Variable(n_)
+    gamma = cp.Parameter(nonneg=True)
+    port_ret = mu.T @ w
+    risk = cp.quad_form(w, sigma)
+    constraint_list = _build_constraints_cvxpy(w, constraints)
+
+    objective = cp.Minimize(gamma*risk - port_ret)
+    problem = cp.Problem(objective, constraint_list)
+
+    #solve the set of efficient portfolios
+    gamma_grid = np.logspace(0,5, grid_size)
+
+    efficient_frontier = []
+    for i in range(grid_size):
+        gamma.value = gamma_grid[i]
+        problem.solve()
+        efficient_frontier.append(w.value)
+
+    return efficient_frontier
+
 
 def _portfolio_variance(w, sigma):
     w = np.matrix(w)

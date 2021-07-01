@@ -10,7 +10,7 @@ import plotting
 
 class Engine:
     '''
-    Initializes the Engine superclass that supersedes both the Portfolio and Risk Model subclasses. Defines the general
+    Initializes the Engine superclass that supersedes both the Portfolio and Risk Model classes. Defines the general
     data structure that fetches and stores data and retrieves states. Also sets the period for analysis that is
     encapsulated within the class and a new class has to be instantiated in order to carry out analysis in different
     time frames.
@@ -32,12 +32,13 @@ class Engine:
         self.period = period
 
     #class methods
-    def get_prices(self, frequency):
+    def get_prices(self, frequency = 'daily'):
         try:
             assert (self.period is not None)
             self.prices = yf.download(self.securities,
                                       start = self.period[0],
-                                      end = self.period[1])
+                                      end = self.period[1],
+                                      frequency = frequency)
             self.prices = self.prices.loc[:, ('Adj Close', slice(None))]
             self.returns = self.prices.pct_change().dropna().to_numpy()
             self.dates = self.prices.index[1:]
@@ -79,6 +80,14 @@ class Portfolio(Engine):
                                      end = self.period[1])
         self.benchmark = self.benchmark.loc[:,'Adj Close']
         self.benchmark = self.benchmark.pct_change().dropna().to_numpy()
+
+    def set_discount(self, discount: str):
+        self.discount = yf.download(discount,
+                                    start = self.period[0],
+                                    end = self.period[1])
+        self.discount = self.discount.loc[:, 'Adj Close'].to_numpy()
+        #
+        self.discount /= 100
 
     def set_transaction_cost(self, transaction_cost = '0.005'):
         self.transaction_cost = transaction_cost
@@ -131,8 +140,11 @@ class Portfolio(Engine):
 
                 if num_rebalance == 0:
                     w_t = self.start_weights
+                    w_prev = w_t
                 else:
-                    w_t = self._rebalance(mu, sigma, model)
+                    w_t = self._rebalance(mu, sigma, w_prev, model)
+                    #cache
+                    w_prev = w_t
                 #todo implement transaction costs
                 #get current prices and compute returns
                 p_t = self._get_state(trade, trade + frequency)
@@ -147,24 +159,50 @@ class Portfolio(Engine):
             model_results['opt_time'] = toc - tic
             self.backtest[model] = model_results
 
-    def get_backtest_report(self):
+    def get_backtest_report(self, *args, **kwargs):
         #construct the dataframe
         bt_rets =  pd.DataFrame({mod : self.backtest[mod]['returns'].flatten()
                                  for mod in self.weighting_models},
                                 index = self.dates[self.estimation_period:])
         bt_rets = (1+bt_rets).cumprod()
         bmark_rets = (1+self.benchmark[self.estimation_period:]).cumprod()
+
+        bt_weights = {}
+        for mod in self.weighting_models:
+            #exclude ew
+            if mod != 'EW':
+                bt_weights[mod] = pd.DataFrame(np.concatenate(self.backtest[mod]['weights'],axis=1).T,
+                                               columns = self.securities)
+
         #plot the returns
         plotting.plot_returns(bt_rets, bmark_rets)
+        #todo
+        # display the risk performance table
 
-    def _rebalance(self, mu, sigma,
+        #plot the weights
+        plotting.plot_weights(bt_weights, self.weighting_models, *args, **kwargs)
+
+    def _rebalance(self, mu, sigma, w_prev,
                    opt_problem: str):
+
+        #solve efficient frontier
+        optimize_grid = False
+        if optimize_grid:
+            self.efficient_frontier = opt._quadratic_risk_utility(mu, sigma, self.constraints,
+                                                                  self.size, 100)
+
+        #solve problems
         if opt_problem == 'EW':
             w_opt = np.full((self.size, 1), 1/self.size)
         if opt_problem == 'GMV':
             w_opt = opt.global_minimum_variance(sigma, self.constraints, self.size)
         if opt_problem == 'RP':
             w_opt = opt.risk_parity(sigma,self.constraints, self.size)
+        if opt_problem == 'MDR':
+            w_opt = opt.max_diversification_ratio(sigma, w_prev, self.constraints)
+
+
+
         w_opt = w_opt.reshape(self.size, 1)
         return w_opt
 

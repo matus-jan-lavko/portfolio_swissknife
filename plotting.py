@@ -25,11 +25,30 @@ def plot_returns(df, r_benchmark, ax = None, *args, **kwargs):
     fig.tight_layout()
     return ax
 
-def plot_weights(df, ax = None, *args, **kwargs):
-    pass
+def plot_weights(weights_dict: dict, models: list,
+                 num_rows = 2, ax = None, *args, **kwargs):
+
+    fig, axes = plt.subplots(num_rows, 2)
+    fig.set_figheight(4*num_rows)
+    fig.set_figwidth(13)
+
+    #don't show ew
+    if 'EW' in models:
+        models.remove('EW')
+
+    for idx, mod in enumerate(models):
+        _plot_stacked_weights(weights_dict[mod], mod, ax = axes.ravel()[idx])
+
+        #turn of the last axs
+        if (idx+1) == len(models) and (idx+1) % 2 != 0:
+            axes.ravel()[idx+1].set_visible(False)
 
 
-def plot_stacked_weights(df, model: str, ax = None, *args, **kwargs):
+    fig.legend(weights_dict[models[0]].columns.to_list(), loc = 'center left', bbox_to_anchor=(1, 0.5))
+    fig = plt.gcf()
+    fig.tight_layout()
+
+def _plot_stacked_weights(df, model: str, ax = None, *args, **kwargs):
     if ax is None:
         ax = plt.gca()
         fig = plt.gcf()
