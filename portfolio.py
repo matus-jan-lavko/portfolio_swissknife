@@ -49,6 +49,8 @@ class Engine:
             elif frequency == 'monthly':
                 self.trading_days = 12
 
+        #todo implement checker - no missing data!
+
         except AssertionError:
             print('You need to provide start and end dates!')
 
@@ -106,7 +108,6 @@ class Portfolio(Engine):
     def set_estimation_method(self, moment: int, function):
         self.estimation_method[moment] = function
 
-    #todo implement constraints (long-only, leverage, weight etc.)
     def set_constraints(self, constraint_dict = None, default = True):
         if default:
             self.constraints = {'long_only': True,
@@ -177,11 +178,11 @@ class Portfolio(Engine):
                 w_prev = w_t
 
                 #todo implement transaction costs
-                #get current prices and compute returns
-                p_t = self._get_state(trade, trade + frequency)
-                r_t = np.dot(p_t, w_t)
+                #get current returns and compute portfolio returns
+                r_t = self._get_state(trade, trade + frequency)
+                r_p = np.dot(r_t, w_t)
 
-                model_results['returns'].append(r_t)
+                model_results['returns'].append(r_p)
                 model_results['weights'].append(w_t)
                 num_rebalance += 1
 
