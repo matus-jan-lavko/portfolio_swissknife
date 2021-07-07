@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 import time
-import cvxpy as cp
 
 import estimation as est
 import optimization as opt
 import plotting
+from metrics import portfolio_summary
+from metrics import information_ratio, var, max_drawdown
 
 class Engine:
     '''
@@ -42,8 +43,17 @@ class Engine:
             self.prices = self.prices.loc[:, ('Adj Close', slice(None))]
             self.returns = self.prices.pct_change().dropna().to_numpy()
             self.dates = self.prices.index[1:]
+
+            if frequency == 'daily':
+                self.trading_days = 252
+            elif frequency == 'monthly':
+                self.trading_days = 12
+
         except AssertionError:
             print('You need to provide start and end dates!')
+
+    def set_custom_prices(self, frequency = 'daily'):
+        raise NotImplementedError
 
     def _get_state(self, t_0, t_1):
         #slicing the engine data structure
@@ -85,7 +95,8 @@ class Portfolio(Engine):
         self.discount = yf.download(discount,
                                     start = self.period[0],
                                     end = self.period[1])
-        self.discount = self.discount.loc[:, 'Adj Close'].to_numpy()
+        self.discount = self.discount.loc[:, 'Adj Close'].reindex(index=self.dates).fillna(method='ffill')
+        self.discount = self.discount.to_numpy()
         #
         self.discount /= 100
 
@@ -96,7 +107,7 @@ class Portfolio(Engine):
         self.estimation_method[moment] = function
 
     #todo implement constraints (long-only, leverage, weight etc.)
-    def set_constraints(self, constraint_dict: dict, default = True):
+    def set_constraints(self, constraint_dict = None, default = True):
         if default:
             self.constraints = {'long_only': True,
                                 'leverage': 1,
@@ -117,13 +128,13 @@ class Portfolio(Engine):
         #estimation
         for trade in range(estimation_period, self.returns.shape[0], frequency):
             # estimate necessary params
-            p_est = self._get_state(trade - estimation_period, trade)
+            r_est = self._get_state(trade - estimation_period, trade)
 
             self.estimates['exp_value'].append(self._estimate(self.estimation_method[0],
-                                                              p_est , *args, **kwargs))
+                                                              r_est , *args, **kwargs))
 
             self.estimates['cov_matrix'].append(self._estimate(self.estimation_method[1],
-                                                               p_est , *args, **kwargs))
+                                                               r_est , *args, **kwargs))
 
         #backtest logic
         for model in models:
@@ -137,14 +148,34 @@ class Portfolio(Engine):
                 #solve optimization starting with start_weights
                 mu = self.estimates['exp_value'][num_rebalance]
                 sigma = self.estimates['cov_matrix'][num_rebalance]
+                r_est = self._get_state(trade - estimation_period, trade)
 
                 if num_rebalance == 0:
                     w_t = self.start_weights
                     w_prev = w_t
+
+                #mean-variance specifications
+                elif model == 'MSR':
+                    ir_kwargs = {'r_f' : self.discount[trade - self.estimation_period: trade],
+                                 'num_periods' : self.trading_days,
+                                 'ratio_type': 'sharpe'}
+                    w_t = self._rebalance(mu , sigma, w_prev, model, r_est = r_est, maximum = True,
+                                          function = information_ratio, function_kwargs = ir_kwargs)
+                elif model == 'MES':
+                    var_kwargs = {'alpha' : 0.05,
+                                  'exp_shortfall': True,
+                                  'dist': 't'}
+                    w_t = self._rebalance(mu , sigma, w_prev, model, r_est = r_est, maximum = False,
+                                          function = var, function_kwargs = var_kwargs)
+                elif model == 'MDD':
+                    w_t = self._rebalance(mu, sigma, w_prev, model, r_est = r_est, maximum = False,
+                                          function = max_drawdown, function_kwargs=None)
+
                 else:
                     w_t = self._rebalance(mu, sigma, w_prev, model)
                     #cache
-                    w_prev = w_t
+                w_prev = w_t
+
                 #todo implement transaction costs
                 #get current prices and compute returns
                 p_t = self._get_state(trade, trade + frequency)
@@ -164,8 +195,8 @@ class Portfolio(Engine):
         bt_rets =  pd.DataFrame({mod : self.backtest[mod]['returns'].flatten()
                                  for mod in self.weighting_models},
                                 index = self.dates[self.estimation_period:])
-        bt_rets = (1+bt_rets).cumprod()
-        bmark_rets = (1+self.benchmark[self.estimation_period:]).cumprod()
+        bt_rets_cum = (1+bt_rets).cumprod()
+        bmark_rets_cum = (1+self.benchmark[self.estimation_period:]).cumprod()
 
         bt_weights = {}
         for mod in self.weighting_models:
@@ -175,22 +206,21 @@ class Portfolio(Engine):
                                                columns = self.securities)
 
         #plot the returns
-        plotting.plot_returns(bt_rets, bmark_rets)
-        #todo
-        # display the risk performance table
-
+        plotting.plot_returns(bt_rets_cum, bmark_rets_cum)
+        stats = portfolio_summary(bt_rets, self.discount[self.estimation_period:],
+                          self.benchmark[self.estimation_period:], self.trading_days)
+        display(stats)
         #plot the weights
         plotting.plot_weights(bt_weights, self.weighting_models, *args, **kwargs)
 
     def _rebalance(self, mu, sigma, w_prev,
-                   opt_problem: str):
+                   opt_problem: str, *args, **kwargs):
 
         #solve efficient frontier
-        optimize_grid = False
-        if optimize_grid:
+
+        if opt_problem == 'MSR' or opt_problem == 'cVAR' or opt_problem == 'MDD':
             self.efficient_frontier = opt._quadratic_risk_utility(mu, sigma, self.constraints,
                                                                   self.size, 100)
-
         #solve problems
         if opt_problem == 'EW':
             w_opt = np.full((self.size, 1), 1/self.size)
@@ -200,7 +230,12 @@ class Portfolio(Engine):
             w_opt = opt.risk_parity(sigma,self.constraints, self.size)
         if opt_problem == 'MDR':
             w_opt = opt.max_diversification_ratio(sigma, w_prev, self.constraints)
-
+        if opt_problem == 'MSR':
+            w_opt = opt.greedy_optimization(self.efficient_frontier, *args, **kwargs)
+        if opt_problem == 'MES':
+            w_opt = opt.greedy_optimization(self.efficient_frontier, *args, **kwargs)
+        if opt_problem == 'MDD':
+            w_opt = opt.greedy_optimization(self.efficient_frontier, *args, **kwargs)
 
 
         w_opt = w_opt.reshape(self.size, 1)

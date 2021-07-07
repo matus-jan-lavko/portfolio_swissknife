@@ -62,16 +62,25 @@ def max_diversification_ratio(sigma, w_prev, constraints: dict):
     w_opt = np.array(problem.x)
     return w_opt
 
+def greedy_optimization(efficient_frontier: list, r_est, maximum, function, function_kwargs):
+    grid_vals = np.zeros(len(efficient_frontier))
+    for idx, solu in enumerate(efficient_frontier):
+        r_p = np.dot(solu, r_est.T)
+        if function_kwargs:
+            grid_vals[idx] = function(r_p, **function_kwargs)
+        else:
+            grid_vals[idx] = function(r_p)
 
-def max_sharpe_ratio(efficient_frontier: list, function):
-    raise NotImplementedError
+    if maximum:
+        opt_id = np.argmax(grid_vals)
+    else:
+        opt_id = np.argmin(grid_vals)
 
-def min_cvar(efficient_frontier: list, function):
-    raise NotImplementedError
+    w_opt = efficient_frontier[opt_id]
+    return w_opt
 
 def hierarchical_risk_parity():
     raise NotImplementedError
-
 
 def _quadratic_risk_utility(mu, sigma, constraints: dict, n_, grid_size = 100):
     w = cp.Variable(n_)
@@ -93,7 +102,6 @@ def _quadratic_risk_utility(mu, sigma, constraints: dict, n_, grid_size = 100):
         efficient_frontier.append(w.value)
 
     return efficient_frontier
-
 
 def _portfolio_variance(w, sigma):
     w = np.matrix(w)
