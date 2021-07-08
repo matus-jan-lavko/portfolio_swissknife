@@ -102,7 +102,8 @@ def linear_factor_model(Y, X, kernel = None, regularization = None):
 
     mod.fit(X_p, Y_p)
 
-    params = {'alpha': mod.intercept_,
-              'beta': mod.coef_}
-    params['residuals'] = np.subtract(Y - params['alpha'], X @ np.atleast_2d(params['beta'].T))
-    return params
+    alpha = mod.intercept_
+    beta = mod.coef_
+    residuals = np.subtract(Y - alpha, X @ np.atleast_2d(beta.T))
+
+    return alpha, beta, residuals

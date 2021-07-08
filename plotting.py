@@ -5,6 +5,24 @@ from matplotlib import cm
 #set global style
 plt.style.use('bmh')
 
+def plot_rolling_beta(df):
+    num_plots = 0
+    fig, axes = plt.subplots(figsize=(15,12))
+    for col in df:
+        num_plots += 1
+        plt.subplot(3, 3, num_plots)
+        for v in df:
+            plt.plot(df.index, df[v], marker='', linewidth=0.8, alpha=0.3)
+
+        plt.ylim(-1.8, 1.8)
+        plt.plot(df.index, df[col], color='firebrick', linewidth=2.4, alpha=1, label=col)
+        plt.xticks(rotation=50)
+        plt.title(col)
+        plt.tight_layout()
+    fig = plt.gcf()
+    fig.tight_layout()
+
+
 def plot_returns(df, r_benchmark, ax = None, *args, **kwargs):
     if ax is None:
         ax = plt.gca()
@@ -61,12 +79,12 @@ def _plot_stacked_weights(df, model: str, ax = None, *args, **kwargs):
 
     cycle = plt.cycler("color", colormap)
     ax.set_prop_cycle(cycle)
-    X = df.index.tolist()
+    X = df.index
 
     ax.stackplot(X, np.vstack(df.values.T), labels=labels, alpha=0.7, edgecolor="black")
 
     ax.set_ylim(0, 1)
-    ax.set_xlim(0, X[-1])
+    ax.set_xlim(X[0],X[-1])
 
     ticks_loc = ax.get_yticks().tolist()
     ax.set_yticks(ax.get_yticks().tolist())

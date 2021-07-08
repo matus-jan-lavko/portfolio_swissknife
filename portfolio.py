@@ -127,7 +127,7 @@ class Portfolio(Engine):
                           'cov_matrix' : []}
 
         #estimation
-        for trade in range(estimation_period, self.returns.shape[0], frequency):
+        for trade in range(self.estimation_period, self.returns.shape[0], frequency):
             # estimate necessary params
             r_est = self._get_state(trade - estimation_period, trade)
 
@@ -141,6 +141,7 @@ class Portfolio(Engine):
         for model in models:
             model_results = {'weights': [],
                              'returns': [],
+                             'trade_dates':[],
                              'opt_time': 0.}
             tic = time.perf_counter()
             num_rebalance = 0
@@ -184,6 +185,7 @@ class Portfolio(Engine):
 
                 model_results['returns'].append(r_p)
                 model_results['weights'].append(w_t)
+                model_results['trade_dates'].append(self.dates[trade])
                 num_rebalance += 1
 
             model_results['returns'] = np.vstack(model_results['returns'])
@@ -204,7 +206,7 @@ class Portfolio(Engine):
             #exclude ew
             if mod != 'EW':
                 bt_weights[mod] = pd.DataFrame(np.concatenate(self.backtest[mod]['weights'],axis=1).T,
-                                               columns = self.securities)
+                                               columns = self.securities, index = self.backtest[mod]['trade_dates'])
 
         #plot the returns
         plotting.plot_returns(bt_rets_cum, bmark_rets_cum)
