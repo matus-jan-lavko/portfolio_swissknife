@@ -1,5 +1,5 @@
 import numpy as np
-
+from sklearn.linear_model import Lasso, Ridge, ElasticNet, LinearRegression
 
 def mean_return_historic(r: np.array):
     '''
@@ -76,3 +76,33 @@ def shrinkage_cov(r, delta=0.5, prior_model=elton_gruber_cov):
     # https://jpm.pm-research.com/content/30/4/110
     honey = delta * prior + (1 - delta) * sig_hat
     return honey
+
+def linear_factor_model(Y, X, kernel = None, regularization = None):
+    t_, n_ = Y.shape
+
+    #setting weights
+    if kernel is None:
+        kernel = np.ones(t_) / t_
+
+    m_Y = kernel @ Y
+    m_X = kernel @ X
+
+    Y_p = ((Y - m_Y).T * np.sqrt(kernel)).T
+    X_p = ((X - m_X).T * np.sqrt(kernel)).T
+
+    #model fit
+    if regularization == 'L1':
+        mod = Lasso(alpha = 0.01/(2.*t_), fit_intercept = True)
+    if regularization == 'L2':
+        mod = Ridge(alpha = 0.01/(2.*t_), fit_intercept = True)
+    if regularization == 'net':
+        mod = ElasticNet(alpha = 0.01/(2.*t_), fit_intercept = True)
+    else:
+        mod = LinearRegression()
+
+    mod.fit(X_p, Y_p)
+
+    params = {'alpha': mod.intercept_,
+              'beta': mod.coef_}
+    params['residuals'] = np.subtract(Y - params['alpha'], X @ np.atleast_2d(params['beta'].T))
+    return params

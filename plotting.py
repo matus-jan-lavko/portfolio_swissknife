@@ -43,8 +43,8 @@ def plot_weights(weights_dict: dict, models: list,
         if (idx+1) == len(models) and (idx+1) % 2 != 0:
             axes.ravel()[idx+1].set_visible(False)
 
-
-    fig.legend(weights_dict[models[0]].columns.to_list(), loc = 'center left', bbox_to_anchor=(1, 0.5))
+    labels = weights_dict[models[0]].columns.to_list()
+    fig.legend(labels[::-1], loc = 'center left', bbox_to_anchor=(1, 0.5))
     fig = plt.gcf()
     fig.tight_layout()
 
