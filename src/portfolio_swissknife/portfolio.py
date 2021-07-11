@@ -3,11 +3,13 @@ import pandas as pd
 import yfinance as yf
 import time
 
-import estimation as est
-import optimization as opt
-import plotting
-from metrics import portfolio_summary
-from metrics import information_ratio, var, max_drawdown
+# import estimation as est
+# import optimization as opt
+# import plotting
+from .metrics import *
+from .optimization import *
+from .plotting import *
+from .estimation import *
 
 class Engine:
     '''
@@ -43,6 +45,7 @@ class Engine:
             self.prices = self.prices.loc[:, ('Adj Close', slice(None))]
             self.returns = self.prices.pct_change().dropna().to_numpy()
             self.dates = self.prices.index[1:]
+            self.custom_prices = False
 
             if frequency == 'daily':
                 self.trading_days = 252
@@ -54,8 +57,19 @@ class Engine:
         except AssertionError:
             print('You need to provide start and end dates!')
 
-    def set_custom_prices(self, frequency = 'daily'):
-        raise NotImplementedError
+    def set_custom_prices(self, df, frequency = 'daily'):
+        self.prices = df
+        self.period = (df.index[0].strftime('%Y-%m-%d'), df.index[-1].strftime('%Y-%m-%d'))
+        self.returns = self.prices.pct_change().dropna().to_numpy()
+        self.dates = self.prices.index[1:]
+        self.estimation_period = 0 #initialize to 0 until a method sets it to x > 0
+        self.custom_prices = True
+
+
+        if frequency == 'daily':
+            self.trading_days = 252
+        elif frequency == 'monthly':
+            self.trading_days = 12
 
     def _get_state(self, t_0, t_1):
         #slicing the engine data structure
@@ -68,7 +82,7 @@ class Portfolio(Engine):
 
         self.start_weights = start_weights
         #initialize estimation methods to simple returns
-        self.estimation_method = [est.mean_return_historic, est.sample_cov]
+        self.estimation_method = [mean_return_historic, sample_cov]
 
         if self.start_weights is not None:
             self.start_weights = start_weights
@@ -105,8 +119,8 @@ class Portfolio(Engine):
     def set_transaction_cost(self, transaction_cost = '0.005'):
         self.transaction_cost = transaction_cost
 
-    def set_estimation_method(self, moment: int, function):
-        self.estimation_method[moment] = function
+    def set_estimation_method(self, function, moment: int):
+        self.estimation_method[moment - 1] = function
 
     def set_constraints(self, constraint_dict = None, default = True):
         if default:
@@ -209,36 +223,36 @@ class Portfolio(Engine):
                                                columns = self.securities, index = self.backtest[mod]['trade_dates'])
 
         #plot the returns
-        plotting.plot_returns(bt_rets_cum, bmark_rets_cum)
+        plot_returns(bt_rets_cum, bmark_rets_cum)
         stats = portfolio_summary(bt_rets, self.discount[self.estimation_period:],
                           self.benchmark[self.estimation_period:], self.trading_days)
         display(stats)
         #plot the weights
-        plotting.plot_weights(bt_weights, self.weighting_models, *args, **kwargs)
+        plot_weights(bt_weights, self.weighting_models, *args, **kwargs)
 
     def _rebalance(self, mu, sigma, w_prev,
                    opt_problem: str, *args, **kwargs):
 
         #solve efficient frontier
 
-        if opt_problem == 'MSR' or opt_problem == 'cVAR' or opt_problem == 'MDD':
-            self.efficient_frontier = opt._quadratic_risk_utility(mu, sigma, self.constraints,
+        if opt_problem == 'MSR' or opt_problem == 'cVAR' or opt_problem == 'MDD' or opt_problem == 'MES':
+            self.efficient_frontier = quadratic_risk_utility(mu, sigma, self.constraints,
                                                                   self.size, 100)
         #solve problems
         if opt_problem == 'EW':
             w_opt = np.full((self.size, 1), 1/self.size)
         if opt_problem == 'GMV':
-            w_opt = opt.global_minimum_variance(sigma, self.constraints, self.size)
+            w_opt = global_minimum_variance(sigma, self.constraints, self.size)
         if opt_problem == 'RP':
-            w_opt = opt.risk_parity(sigma,self.constraints, self.size)
+            w_opt = risk_parity(sigma,self.constraints, self.size)
         if opt_problem == 'MDR':
-            w_opt = opt.max_diversification_ratio(sigma, w_prev, self.constraints)
+            w_opt = max_diversification_ratio(sigma, w_prev, self.constraints)
         if opt_problem == 'MSR':
-            w_opt = opt.greedy_optimization(self.efficient_frontier, *args, **kwargs)
+            w_opt = greedy_optimization(self.efficient_frontier, *args, **kwargs)
         if opt_problem == 'MES':
-            w_opt = opt.greedy_optimization(self.efficient_frontier, *args, **kwargs)
+            w_opt = greedy_optimization(self.efficient_frontier, *args, **kwargs)
         if opt_problem == 'MDD':
-            w_opt = opt.greedy_optimization(self.efficient_frontier, *args, **kwargs)
+            w_opt = greedy_optimization(self.efficient_frontier, *args, **kwargs)
 
 
         w_opt = w_opt.reshape(self.size, 1)

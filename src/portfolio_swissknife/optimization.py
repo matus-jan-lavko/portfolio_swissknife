@@ -80,9 +80,10 @@ def greedy_optimization(efficient_frontier: list, r_est, maximum, function, func
     return w_opt
 
 def hierarchical_risk_parity():
+    #todo implement
     raise NotImplementedError
 
-def _quadratic_risk_utility(mu, sigma, constraints: dict, n_, grid_size = 100):
+def quadratic_risk_utility(mu, sigma, constraints: dict, n_, grid_size = 100):
     w = cp.Variable(n_)
     gamma = cp.Parameter(nonneg=True)
     port_ret = mu.T @ w

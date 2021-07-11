@@ -13,6 +13,7 @@ def plot_rolling_beta(df):
         plt.subplot(3, 3, num_plots)
         for v in df:
             plt.plot(df.index, df[v], marker='', linewidth=0.8, alpha=0.3)
+            plt.axhline(0, color='gray', alpha=0.3, linewidth=0.5)
 
         plt.ylim(-1.8, 1.8)
         plt.plot(df.index, df[col], color='firebrick', linewidth=2.4, alpha=1, label=col)
@@ -21,7 +22,6 @@ def plot_rolling_beta(df):
         plt.tight_layout()
     fig = plt.gcf()
     fig.tight_layout()
-
 
 def plot_returns(df, r_benchmark, ax = None, *args, **kwargs):
     if ax is None:
