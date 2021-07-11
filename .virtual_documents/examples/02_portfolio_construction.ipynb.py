@@ -30,13 +30,19 @@ rm_universe.get_prices('daily')
 a, b, c = rm_universe._estimate_panel(method='linear')
 
 
-b.shape
-
-
 sort = np.argsort(b[:,0])
 
 
-plt.bar(height=b[:,0][sort],x=np.array(rm_universe.portfolio.securities)[sort])
+sort2d = np.argsort(b,axis = 0)
+
+
+sort2d[:,0]
+
+
+plt.bar(height=b[:,0][sort2d[:,0]],x=np.array(rm_universe.portfolio.securities)[sort2d[:,0]])
+
+
+np.array(rm_universe.portfolio.securities)[sort2d[:,0]][:10]
 
 
 np.array(rm_universe.portfolio.securities)[sort]
