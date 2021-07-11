@@ -37,7 +37,7 @@ class RiskModel(Engine):
                 self.portfolio.returns = self.portfolio.prices.pct_change().dropna().to_numpy()
                 self.returns = self.prices.pct_change().dropna().to_numpy()
 
-    def rolling_backtest(self, method = 'linear', estimation_period = 252, window = 22, *args, **kwargs):
+    def rolling_factor_exposure(self, method = 'linear', estimation_period = 252, window = 22, *args, **kwargs):
         #estimation_window
         self.estimation_period = estimation_period
         self.risk_backtest = {}
@@ -67,6 +67,9 @@ class RiskModel(Engine):
 
         elif method == 'PCA':
             raise NotImplementedError
+
+    def rolling_factor_selection(self):
+        raise NotImplementedError
 
 
     def get_risk_report(self, model: str):

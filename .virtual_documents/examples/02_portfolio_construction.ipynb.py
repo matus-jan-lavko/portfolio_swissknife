@@ -36,16 +36,22 @@ sort = np.argsort(b[:,0])
 sort2d = np.argsort(b,axis = 0)
 
 
-sort2d[:,0]
+pct = int(len(rm_universe.portfolio.securities)/10)
 
 
-plt.bar(height=b[:,0][sort2d[:,0]],x=np.array(rm_universe.portfolio.securities)[sort2d[:,0]])
+bottom = np.array(rm_universe.portfolio.securities)[sort2d[:,0]][:pct]
 
 
-np.array(rm_universe.portfolio.securities)[sort2d[:,0]][:10]
+top  = np.array(rm_universe.portfolio.securities)[sort2d[:,0]][-pct:]
 
 
-np.array(rm_universe.portfolio.securities)[sort]
+b[:,0][sort2d[:,0]][:pct]
+
+
+plt.bar(height=b[:,0][sort2d[:,0]][:pct],x=bottom)
+
+
+plt.bar(height=b[:,0][sort2d[:,0]][-pct:],x=top)
 
 
 

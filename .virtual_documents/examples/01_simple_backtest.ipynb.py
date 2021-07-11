@@ -47,7 +47,7 @@ rm1 = rm.RiskModel(pf1, factors)
 rm1.get_prices('daily')
 
 
-rm1.rolling_backtest(method='linear')
+rm1.rolling_factor_exposure(method='linear')
 
 
 rm1.get_risk_report(model = 'GMV')
