@@ -23,14 +23,19 @@ def plot_rolling_beta(df):
     fig = plt.gcf()
     fig.tight_layout()
 
-def plot_returns(df, r_benchmark, ax = None, *args, **kwargs):
+def plot_returns(df, r_benchmark, ax = None, title = None, *args, **kwargs):
     if ax is None:
         ax = plt.gca()
         fig = plt.gcf()
         fig.set_figheight(10)
         fig.set_figwidth(13)
 
-    ax.set_title('Cumulative Returns')
+    text = 'Cumulative Returns'
+
+    if title:
+        text = text  + ' ' + title
+
+    ax.set_title(text)
 
     labels = df.columns.to_list()
     labels += ['Benchmark']
@@ -39,6 +44,7 @@ def plot_returns(df, r_benchmark, ax = None, *args, **kwargs):
     ax.plot(dates, df, *args, **kwargs)
     ax.plot(dates, r_benchmark, alpha=0.8, c='gray', linestyle='--')
     ax.legend(labels)
+
     fig = plt.gcf()
     fig.tight_layout()
     return ax

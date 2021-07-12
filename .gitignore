@@ -1,1 +1,5 @@
 ext_data/
+.virtual_documents
+.ipynb_checkpoints
+dist/
+examples/.ipynb_checkpoints/

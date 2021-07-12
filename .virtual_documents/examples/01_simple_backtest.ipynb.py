@@ -6,9 +6,6 @@ get_ipython().run_line_magic("autoreload", " 2")
 plt.style.use('bmh')
 
 
-os.chdir('C:\\Users\matus\pysource')
-
-
 from portfolio_swissknife import portfolio as ps
 from portfolio_swissknife import risk_model as rm
 
@@ -32,14 +29,17 @@ pf1.set_discount('^TNX')
 
 
 pf1.set_constraints(default=True) #defaults to long_only fully invested portfolio with no leverage
-pf1.historical_backtest(models=['EW','RP', 'GMV', 'MDD'], frequency=22, estimation_period = 252)
+pf1.historical_backtest(models=['EW','RP', 'GMV', 'MDD', 'MDR'], frequency=22, estimation_period = int(252*1.5))
 
 
 #runtimes
 pd.DataFrame(pf1.backtest).loc['opt_time'].plot(kind='bar', title='Optimization runtime')
 
 
-pf1.get_backtest_report(num_rows=3)
+pf1.backtest['EW']['returns'].shape
+
+
+pf1.get_backtest_report(num_rows=2)
 
 
 factors = ['SPY', 'VLUE', 'SIZE', 'QUAL', 'MTUM', 'USMV']
@@ -50,7 +50,7 @@ rm1.get_prices('daily')
 rm1.rolling_factor_exposure(method='linear')
 
 
-rm1.get_risk_report(model = 'GMV')
+rm1.get_risk_report(model = 'MDD')
 
 
 
