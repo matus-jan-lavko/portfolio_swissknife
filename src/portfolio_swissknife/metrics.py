@@ -4,14 +4,42 @@ from scipy.stats import norm, t
 
 
 def annualized_average_return(r, num_periods):
+    '''
+    Calculates the average return of the series
+
+    :param r: time series of returns: np.array
+    :param num_periods: number of periods considered in the trading window such as 12 for monthly, 252 for daily
+        returns: int
+    :return: float
+    '''
+
     return (np.sum(r) * (num_periods / r.shape[0])) * 100
 
 
 def annualized_cagr(r, num_periods):
+    '''
+    Calculates the annualized compounded growth rate of the series
+
+    :param r: time series of returns: np.array
+    :param num_periods: number of periods considered in the trading window such as 12 for monthly, 252 for daily
+        returns: int
+    :return: float
+    '''
+
     return ((np.prod((1 + r))) ** (num_periods / r.shape[0]) - 1) * 100
 
 
 def annualized_stdev(r, num_periods, downside=False):
+    '''
+    Calculates the estimate for the annualized standard deviation of the series
+
+    :param r: time series of returns: np.array
+    :param num_periods: number of periods considered in the trading window such as 12 for monthly, 252 for daily
+        returns: int
+    :param downside: flag for downside standard deviation: bool
+    :return: float
+    '''
+
     if downside:
         semistd = np.std(r[r < 0])
         return (semistd * (num_periods ** 0.5)) * 100
@@ -20,6 +48,13 @@ def annualized_stdev(r, num_periods, downside=False):
 
 
 def skewness(r):
+    '''
+    Calculates the estimate for the skewness of the series
+
+    :param r: time series of returns: np.array
+    :return: float
+    '''
+
     t = r.shape[0]
     term1 = t / ((t - 1) * (t - 2))
     term2 = np.sum(((r - np.mean(r)) / np.std(r, ddof=1)) ** 3)
@@ -27,6 +62,12 @@ def skewness(r):
 
 
 def kurtosis(r):
+    '''
+    Calculates the estimate for the kurtosis of the series
+
+    :param r: time series of returns: np.array
+    :return: float
+    '''
     t = r.shape[0]
     term1 = t / ((t - 1) * (t - 2) * (t - 3))
     term2 = np.sum(((r - np.mean(r)) / np.std(r, ddof=1)) ** 4)
@@ -35,6 +76,14 @@ def kurtosis(r):
 
 
 def coskewness(r, r_b):
+    '''
+    Calculates the estimate of a coskewness with a benchmark series.
+
+    :param r: time series of returns: np.array
+    :param r_b: time series of benchmark returns: np.array
+    :return: float
+    '''
+
     t = r.shape[0]
     term1 = t / ((t - 1) * (t - 2))
     num = ((r - np.mean(r)) * ((r_b - np.mean(r_b) ** 2)))
@@ -43,6 +92,14 @@ def coskewness(r, r_b):
 
 
 def cokurtosis(r, r_b):
+    '''
+    Calculates the estimate of a coskewness with a benchmark series.
+
+    :param r: time series of returns: np.array
+    :param r_b: time series of benchmark returns: np.array
+    :return: float
+    '''
+
     t = r.shape[0]
     term1 = t / ((t - 1) * (t - 2) * (t - 3))
     num = ((r - np.mean(r) * ((r_b - np.mean(r_b) ** 3))))
@@ -52,12 +109,26 @@ def cokurtosis(r, r_b):
 
 
 def max_drawdown(r):
+    '''
+    Calculates the maximum drawdown of the series, the largest drop in the returns from the top to the bottom.
+
+    :param r: time series of returns: np.array
+    :return: float
+    '''
+
     dd = _drawdown(r)
     max_dd = np.min(dd)
     return -(max_dd) * 100
 
 
 def max_drawdown_duration(r):
+    '''
+    The duration of the maximum drawdown of the series in the granularity of the series.
+
+    :param r: time series of returns: np.array
+    :return: int
+    '''
+
     dd = _drawdown(r)
     end = np.argmin(dd)
     start = np.argmax(dd[:end])
@@ -65,6 +136,15 @@ def max_drawdown_duration(r):
 
 
 def information_ratio(r, r_f, num_periods, ratio_type='sharpe'):
+    '''
+    Calculates the risk to reward ratio of a series.
+
+    :param r: time series of returns: np.array
+    :param r_f: risk free reference rate: np.array
+    :param num_periods: number of trading periods considered: int
+    :param ratio_type: type of the ratio to be calculated such as sharpe, calmar or sortino: str
+    :return: float
+    '''
     # convert the annual yield to per period
     r_f = (1 + r_f) ** (1 / num_periods) - 1
     r_exc = r - r_f
@@ -80,6 +160,15 @@ def information_ratio(r, r_f, num_periods, ratio_type='sharpe'):
 
 
 def var(r, alpha=0.05, exp_shortfall=False, dist='t'):
+    '''
+    Calculates the Value at Risk measure for a particular return series.
+
+    :param r: time series of returns: np.array
+    :param alpha: significance level: float
+    :param exp_shortfall: flag for calculating cVaR: bool
+    :param dist: token for the distribution to be used: str
+    :return: float
+    '''
     # fit the distributions
     mu_fit_norm, sig_fit_norm = norm.fit(r)
     if dist == 'normal':
@@ -100,11 +189,25 @@ def var(r, alpha=0.05, exp_shortfall=False, dist='t'):
 
 
 def reward_to_var(r, num_periods, *args, **kwargs):
+    '''
+    Calculates the reward to Value at Risk as the average return over the var.
+
+    :param r: time series of returns: np.array
+    :param num_periods: number of trading periods considered: int
+    :return: float
+    '''
     var_val = var(r, *args, **kwargs)
     reward = (annualized_average_return(r, num_periods) / (num_periods * var_val))
     return reward
 
 def pain_ratio(r, num_periods):
+    '''
+    Calculates the Pain Ratio.
+
+    :param r: time series of returns: np.array
+    :param num_periods: number of trading periods considered: int
+    :return: float
+    '''
     t = r.shape[0]
     dd = _drawdown(r)
     pain_index = -np.sum(dd / t)
@@ -113,6 +216,15 @@ def pain_ratio(r, num_periods):
 
 
 def portfolio_summary(r, r_f, r_b, num_periods):
+    '''
+    Function for aggregating all the risk performance measures into one table
+
+    :param r: matrix of returns: np.array
+    :param r_f: risk-free reference: np.array
+    :param r_b: benchmark returns: np.array
+    :param num_periods: number of trading periods considered: int
+    :return: table of statistics: pd.DataFrame
+    '''
     # r = np.multiply(r, 100)
     # r_f = np.multiply(r_f, 100)
     # r_b = np.multiply(r_b, 100)
@@ -144,6 +256,12 @@ def portfolio_summary(r, r_f, r_b, num_periods):
 
 
 def _drawdown(r):
+    '''
+    Helper function for calculating drawdowns of a series
+
+    :param r: time series of returns
+    :return: array of drawdowns: np.array
+    '''
     index = 1000 * np.cumprod(1 + r)
     hwm = np.maximum.accumulate(index)
     dd = (index - hwm) / hwm

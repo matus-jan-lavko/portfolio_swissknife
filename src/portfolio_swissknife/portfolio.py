@@ -28,10 +28,24 @@ class Engine:
         raise NotImplementedError
 
     def set_period(self, period: tuple):
+        '''
+        Sets the period that the user wants to analyse bound to the swissknife object
+
+        :param period: tuple of dates with tuple[0] being the start and tuple[1] being the end of the period: tuple
+        :return: None
+        '''
+
         self.period = period
 
     #class methods
     def get_prices(self, frequency = 'daily'):
+        '''
+        Pulls prices from yfinance at the requested frequency
+
+        :param frequency: granularity of prices such 'daily', 'monthly' or other : str
+        :return: None
+        '''
+
         try:
             assert (self.period is not None)
             self.prices = yf.download(self.securities,
@@ -54,6 +68,13 @@ class Engine:
             print('You need to provide start and end dates!')
 
     def set_custom_prices(self, df, frequency = 'daily'):
+        '''
+        Sets custom prices for the swissknife object from a locally loaded source
+
+        :param df: table of prices to be loaded: pd.DataFrame
+        :param frequency: granularity of prices such as 'daily': str
+        :return: None
+        '''
         self.prices = df
         self.period = (df.index[0].strftime('%Y-%m-%d'), df.index[-1].strftime('%Y-%m-%d'))
         self.returns = self.prices.pct_change().dropna().to_numpy()
@@ -66,20 +87,41 @@ class Engine:
             self.trading_days = 252
         elif frequency == 'monthly':
             self.trading_days = 12
+        else:
+            raise ValueError('This frequency is not supported yet!')
 
     def _get_state(self, t_0, t_1):
+        '''
+        Returns a slice of returns from the attribute self.returns
+
+        :param t_0: first index: int
+        :param t_1: second index: int
+        :return: sliced array of returns: np.array
+        '''
+
         #slicing the engine data structure
         assert t_0 <= t_1
         return self.returns[t_0 : t_1, :]
 
 class Portfolio(Engine):
+    '''
+    Portfolio class that encapsulates all the data needed for an analysis of a user-defined portfolio. Provides a way
+    of examining different weighing strategies, visualisation tools and backtest of a portfolio that features fixed
+    set of securities.
+    '''
     def __init__(self, securities : list, start_weights = None):
+        '''
+
+        :param securities: tickers to be included in the portfolio: list of str
+        :param start_weights: optional starting weights initialized to equal weights: np array
+        '''
         super().__init__(securities)
 
         #initialize estimation methods to simple returns
         self.estimation_method = [mean_return_historic, sample_cov]
 
         if start_weights is not None:
+            assert len(start_weights) == self.size
             self.start_weights = start_weights
         else:
             #initialize to equal weights
@@ -96,7 +138,15 @@ class Portfolio(Engine):
     def __len__(self):
         raise NotImplementedError
 
+    #todo create functions for custom benchmarks and discounts
     def set_benchmark(self, benchmark: str):
+        '''
+        Sets a benchmark that the portfolio is compared to such as the SPY.
+
+        :param benchmark: ticker for the benchmark to be pulled from yfinance
+        :return: None
+        '''
+
         self.benchmark = yf.download(benchmark,
                                      start = self.period[0],
                                      end = self.period[1])
@@ -105,6 +155,14 @@ class Portfolio(Engine):
         self.benchmark = self.benchmark.pct_change().dropna().to_numpy()
 
     def set_discount(self, discount: str):
+        '''
+        Sets the discount rate that defines the opportunity set of the investor. The discount is used in all evaluation
+        calculations as the main financing rate.
+
+        :param discount: ticker of discount to be pulled from yfinance
+        :return: None
+        '''
+
         self.discount = yf.download(discount,
                                     start = self.period[0],
                                     end = self.period[1])
@@ -113,13 +171,34 @@ class Portfolio(Engine):
         #
         self.discount /= 100
 
+    #todo implement transaction cost model
     def set_transaction_cost(self, transaction_cost = '0.005'):
+        '''
+        Sets the transaction cost that will be used in the fixed transaction cost model
+
+        :param transaction_cost: fixed transaction cost: int
+        :return: None
+        '''
         self.transaction_cost = transaction_cost
 
     def set_estimation_method(self, function, moment: int):
+        '''
+        Sets the estimation method for the selected statistical moment to be estimated.
+
+        :param function: function that estimates the moment: function
+        :param moment: selected moment in non-pythonic indexing: int
+        :return: None
+        '''
         self.estimation_method[moment - 1] = function
 
     def set_constraints(self, constraint_dict = None, default = True):
+        '''
+        Sets convex constraints for the optimizers.
+
+        :param constraint_dict: dictionary of constraints
+        :param default: flag for if to use default long-only normalized portfolio: bool
+        :return: None
+        '''
         if default:
             self.constraints = {'long_only': True,
                                 'leverage': 1,
@@ -129,6 +208,30 @@ class Portfolio(Engine):
 
     def historical_backtest(self, models = ['EW', 'GMV', 'RP'], frequency = 22,
                  estimation_period = 252, *args, **kwargs):
+        '''
+        Conducts a historical backtest in order to see an ex-post performance of a set of securities based on
+        pre-selected weighing schemes. A tool to validate investment ideas in a non-experimental manner. This should
+        not serve as any promise of future performance but rather a sanity check for the investor to help them
+        understand how would a portfolio perform if projected on the past prices.
+
+        :param models: list of models that can be used. Currently supported models are:
+             - Equal Weights (EW)
+             - Global Minimum Variance (GMV)
+             - Equal Risk Contribution (RP)
+             - Maximum Diversification Ratio (MDR)
+             - Maximum Sharpe Ratio (MSR)
+             - Minimum Expected Shortfall (MES)
+             - Minimum Maximum Drawdown (MDD)
+
+            To be added:
+             - Minimum Skew (MS)
+             - Hierarchical Risk Parity (HRP)
+
+
+        :param frequency: window used for rebalancing the portfolio in number of trading days: int
+        :param estimation_period: number of trading days used for estimating parameters in the models: int
+        :return: None
+        '''
 
         #caching backtest attributes
         self.weighting_models = models
@@ -197,6 +300,12 @@ class Portfolio(Engine):
             self.backtest[model] = model_results
 
     def get_backtest_report(self, display_weights = True, *args, **kwargs):
+        '''
+        Displays the basic risk and performance measures of the backtest together with weights.
+
+        :param display_weights: flag for displaying weights plots: bool
+        :return: None
+        '''
         #construct the dataframe
         bt_rets =  pd.DataFrame({mod : self.backtest[mod]['returns'].flatten()
                                  for mod in self.weighting_models},
@@ -227,7 +336,15 @@ class Portfolio(Engine):
 
     def _rebalance(self, mu, sigma, w_prev,
                    opt_problem: str, *args, **kwargs):
+        '''
+        Helper function that acts in one specific point in time in order to rebalance the portfolio.
 
+        :param mu: estimate of the first moment: np.array
+        :param sigma: estimate of the second moment: np.array
+        :param w_prev: cached weights from the previous window: np.array
+        :param opt_problem: token for the optimization problem, see historical_backtest : str
+        :return: optimized weights: np.array
+        '''
         #solve efficient frontier
 
         if opt_problem == 'MSR' or opt_problem == 'cVAR' or opt_problem == 'MDD' or opt_problem == 'MES':
@@ -254,6 +371,14 @@ class Portfolio(Engine):
         return w_opt
 
     def _rolling_estimate(self, estimates_dict, estimation_period, frequency, *args, **kwargs):
+        '''
+        Helper function for estimating the necessary parameters for the optimization models
+
+        :param estimates_dict: dictionary of estimates: dict
+        :param estimation_period: period for the estimates to be calculated on: int
+        :param frequency: window used for re-estimation of the parameters: int
+        :return: estimates of all requested moments: dict
+        '''
         for trade in range(estimation_period, self.returns.shape[0], frequency):
             # estimate necessary params
             r_est = super()._get_state(trade - estimation_period, trade)
@@ -268,7 +393,22 @@ class Portfolio(Engine):
         return moment
 
 class FactorPortfolio(Portfolio):
+    '''
+    A class extending the main Portfolio class that is used for the analysis of a factor that is defined in the
+    RiskModel class. Depends on a defined investment universe that is defined as an instance of a Portfolio object
+    and a RiskModel instance. Features a dynamic selection backtest with changing sets of securities each rebalance
+    window.
+
+    '''
     def __init__(self, universe: Portfolio, risk_model, factor: str, start_weights = None):
+        '''
+
+        :param universe: portfolio defining the investment universe: Portfolio
+        :param risk_model: risk model applied on the investment universe: RiskModel
+        :param factor: selected factor to be examined and backtested: str
+        :param start_weights: optional starting weights: np array
+        '''
+
         self.universe = universe
         self.risk_model = risk_model
         self.returns = self.universe.returns
@@ -291,10 +431,40 @@ class FactorPortfolio(Portfolio):
             self.start_weights.fill(1/self.size)
 
     def _get_state(self, t_0, t_1, filter):
+        '''
+        Returns a slice of returns from the attribute self.returns with a defined filter on the securities to
+        be returned
+
+        :param t_0: first index: int
+        :param t_1: second index: int
+
+        :param filter: indexes of securities to be returned: list
+        :return:
+        '''
         return super(FactorPortfolio, self)._get_state(t_0, t_1)[:, filter]
 
     def historical_backtest(self, models = ['EW', 'GMV', 'RP'], frequency = 22,
                             estimation_period = 252, *args, **kwargs):
+        '''
+        Conducts a historical backtest as a long-only or a long-short spread of the factor portfolio.
+
+        :param models: list of models that can be used. Currently supported models are:
+         - Equal Weights (EW)
+         - Global Minimum Variance (GMV)
+         - Equal Risk Contribution (RP)
+         - Maximum Sharpe Ratio (MSR)
+         - Minimum Expected Shortfall (MES)
+         - Minimum Maximum Drawdown (MDD)
+
+        To be added:
+         - Minimum Skew (MS)
+         - Hierarchical Risk Parity (HRP)
+
+
+        :param frequency: window used for rebalancing the portfolio in number of trading days: int
+        :param estimation_period: number of trading days used for estimating parameters in the models: int
+        :return: None
+        '''
 
         self.weighting_models = models
         self.estimation_period = estimation_period
@@ -376,6 +546,16 @@ class FactorPortfolio(Portfolio):
 
     def _rolling_estimate(self, estimates_dict, estimation_period, frequency,
                           security_filter, *args, **kwargs):
+        '''
+        Helper function for estimating the necessary parameters for the optimization models
+
+        :param estimates_dict: dictionary of estimates: dict
+        :param estimation_period: period for the estimates to be calculated on: int
+        :param frequency: window used for re-estimation of the parameters: int
+        :param security_filter: filter for the securities to be estimated: list
+        :return: estimates of all requested moments: dict
+        '''
+
         counter = 0
         for trade in range(estimation_period, self.returns.shape[0], frequency):
             # estimate necessary params
@@ -388,6 +568,18 @@ class FactorPortfolio(Portfolio):
             counter += 1
         return estimates_dict
 
+class CustomPortfolio(Portfolio):
+    '''
+    Implements a CustomPortfolio class that allows the user to analyze a custom strategy that has been backtested
+    outside of the swissknife package.
+
+    '''
+    def __init__(self, bt_rets: pd.DataFrame):
+        '''
+        :param bt_rets: backtest of the returns of the strategy: pd.DataFrame
+        '''
+
+        self.backtest = bt_rets
 
 
 

@@ -6,6 +6,12 @@ from matplotlib import cm
 plt.style.use('bmh')
 
 def plot_rolling_beta(df):
+    '''
+    Plots the rolling betas.
+
+    :param df: dataframe of betas: pd.DataFrame
+    :return: None
+    '''
     num_plots = 0
     fig, axes = plt.subplots(figsize=(15,12))
     for col in df:
@@ -24,6 +30,15 @@ def plot_rolling_beta(df):
     fig.tight_layout()
 
 def plot_returns(df, r_benchmark, ax = None, title = None, *args, **kwargs):
+    '''
+    Plots returns together with a benchmark.
+
+    :param df: table of returns: pd.DataFrame
+    :param r_benchmark: series of benchmark returns: pd.Series, pd.DataFrame
+    :param ax: axis to be plotted on: plt.axis
+    :param title: name to be displayed: str
+    :return: plt.axis
+    '''
     if ax is None:
         ax = plt.gca()
         fig = plt.gcf()
@@ -51,6 +66,15 @@ def plot_returns(df, r_benchmark, ax = None, title = None, *args, **kwargs):
 
 def plot_weights(weights_dict: dict, models: list,
                  num_rows = 2, ax = None, *args, **kwargs):
+    '''
+    Plots the weights plots of a fixed number of assets and their development according to a weighing model.
+
+    :param weights_dict: dictionary of weights of all models to be plotted: dict
+    :param models: names of models to be plotted: list
+    :param num_rows: number of rows of plots: int
+    :param ax: axis to be plotted on: plt.axis
+    :return: None
+    '''
 
     fig, axes = plt.subplots(num_rows, 2)
     fig.set_figheight(4*num_rows)
@@ -73,6 +97,14 @@ def plot_weights(weights_dict: dict, models: list,
     fig.tight_layout()
 
 def _plot_stacked_weights(df, model: str, ax = None, *args, **kwargs):
+    '''
+    Helper function for plotting stacked weights plots.
+
+    :param df: dataframe of weights: pd.DataFrame
+    :param model: name of the model: str
+    :param ax: axis to be plotted on: plt.axis
+    :return: plt.axis
+    '''
     if ax is None:
         ax = plt.gca()
         fig = plt.gcf()

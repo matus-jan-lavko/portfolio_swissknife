@@ -3,6 +3,14 @@ import cvxpy as cp
 from scipy.optimize import minimize
 
 def global_minimum_variance(sigma, constraints: dict, n_):
+    '''
+    Calculates the GMV portfolio.
+
+    :param sigma: estimates of the cov matrix: np.array
+    :param constraints: dictionary of constraints: dict
+    :param n_: number of assets: int
+    :return: optimal weights: np.array
+    '''
     w = cp.Variable(n_)
     risk = cp.quad_form(w, sigma)
 
@@ -16,8 +24,24 @@ def global_minimum_variance(sigma, constraints: dict, n_):
 
 
 def risk_parity(sigma , constraints: dict, n_):
+    '''
+    Calculates the Equal Risk Parity portfolio.
+
+    :param sigma: estimates of the cov matrix: np.array
+    :param constraints: dictionary of constraints: dict
+    :param n_: number of assets: int
+    :return: optimal weights: np.array
+    '''
+
     def risk_contribution(w, sigma):
-        # function that calculates asset contribution to total risk
+        '''
+        Calculates asset contribution to total risk
+
+        :param w: weights: np.array
+        :param sigma: estimated cov matrix: np.array
+        :return: risk contribution: np.array
+        '''
+
         w = np.matrix(w)
         sigma = np.sqrt(_portfolio_variance(w, sigma))
         # Marginal Risk Contribution
@@ -27,6 +51,13 @@ def risk_parity(sigma , constraints: dict, n_):
         return rc
 
     def risk_objective(x, params):
+        '''
+        Calculates portfolio risk and provides an objective for the scipy.minimize function
+
+        :param x: dummy portfolio weights: np.array
+        :param params: parameters estimated within the outer function: list
+        :return: objective function: np.array
+        '''
         # calculate portfolio risk
         covar = params[0]  # covariance table
         b = params[1]  # risk target in percent of portfolio risk
@@ -47,7 +78,23 @@ def risk_parity(sigma , constraints: dict, n_):
     return w_opt
 
 def max_diversification_ratio(sigma, w_prev, constraints: dict):
+    '''
+    Calculates the Maximum Diversification Ratio portfolio
+
+    :param sigma: cov matrix estimates: np.array
+    :param w_prev: cached weights from previous window: np.array
+    :param constraints: optimizing constraints: dict
+    :return: optimal weights: np.array
+    '''
+
     def diversification_ratio(w, sigma):
+        '''
+        Defines and calculates the diversfication ratio
+
+        :param w: weight dummy: np.array
+        :param sigma: estimates of cov matrix: np.array
+        :return: diversfication ratio: np.array
+        '''
         #average weighted volatility
         w_vol = np.dot(np.sqrt(np.diag(sigma)), w.T)
         #port vol
@@ -63,6 +110,16 @@ def max_diversification_ratio(sigma, w_prev, constraints: dict):
     return w_opt
 
 def greedy_optimization(efficient_frontier: list, r_est, maximum, function, function_kwargs):
+    '''
+    Greedy optimization of a portfolio based on a efficient frontier
+
+    :param efficient_frontier: mean variance frontier of optimized portfolios: np.array
+    :param r_est: series of returns to estimate the objective on: np.array
+    :param maximum: flag for maximum: bool
+    :param function: function that calculates the objective: function
+    :param function_kwargs: arg
+    :return: optimal weights: np.array
+    '''
     grid_vals = np.zeros(len(efficient_frontier))
     for idx, solu in enumerate(efficient_frontier):
         r_p = np.dot(solu, r_est.T)
@@ -84,6 +141,16 @@ def hierarchical_risk_parity():
     raise NotImplementedError
 
 def quadratic_risk_utility(mu, sigma, constraints: dict, n_, grid_size = 100):
+    '''
+    Calculates the mean-variance efficient frontier based on the estimates of the first and second moments
+
+    :param mu: first moment estimates: np.array
+    :param sigma: second moment estimates: np.array
+    :param constraints: constraints dictionary: np.array
+    :param n_: number of assets: int
+    :param grid_size: number of efficient portfolios on the grid: int
+    :return: efficient frontier: list
+    '''
     w = cp.Variable(n_)
     gamma = cp.Parameter(nonneg=True)
     port_ret = mu.T @ w
@@ -105,11 +172,25 @@ def quadratic_risk_utility(mu, sigma, constraints: dict, n_, grid_size = 100):
     return efficient_frontier
 
 def _portfolio_variance(w, sigma):
+    '''
+    Helper function for calculating portfolio variance
+
+    :param w: weights of the portfolio: np.array
+    :param sigma: estimated cov matrix: np.array
+    :return: float
+    '''
     w = np.matrix(w)
     sig_p = w * sigma * w.T
     return sig_p[0,0]
 
 def _build_constraints_cvxpy(w_obj, constraints: dict):
+    '''
+    Functions that builds constraints for an optimization program written on the cvxpy package.
+
+    :param w_obj: weights object: cvxpy.variable
+    :param constraints: dictionary of constraints mapped to the cvxpy constraints
+    :return: list of cvxpy constraints to be input to the optimizer: list
+    '''
     constraint_list = []
     for k, v in constraints.items():
         if k == 'long_only' and v == True:
@@ -121,6 +202,13 @@ def _build_constraints_cvxpy(w_obj, constraints: dict):
     return constraint_list
 
 def _build_constraints_scipy(constraints: dict):
+    '''
+    Functions that builds constraints for an optimization program written on the scipy package.
+
+    :param constraints: dictionary of constraints mapped to the scipy constraints
+    :return: scipy constraints to be input to the optimizer: tuple
+    '''
+
     for k, v in constraints.items():
         if k == 'long_only' and v == True:
             long_only = {'type': 'ineq', 'fun' : lambda x: x}

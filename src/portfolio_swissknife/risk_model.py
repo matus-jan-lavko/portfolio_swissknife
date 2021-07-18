@@ -6,7 +6,17 @@ from .portfolio import Portfolio, Engine
 
 
 class RiskModel(Engine):
+    '''
+    A class that defines a risk model to be applied on a particular portfolio in order to assess risks and develop
+    a pricing model.
+
+    '''
     def __init__(self, portfolio: Portfolio, factors: list):
+        '''
+
+        :param portfolio: portfolio to analyze: Portfolio
+        :param factors: tickers or names of factors to be included: list of str
+        '''
         # factors in the risk_model
         self.factors = factors
         self.portfolio = portfolio
@@ -24,6 +34,12 @@ class RiskModel(Engine):
         raise NotImplementedError
 
     def get_prices(self, frequency='daily'):
+        '''
+        Pulls prices from yfinance and matches with the dates and indexes in the Portfolio object if different.
+
+        :param frequency: granularity of the time series: str
+        :return: None
+        '''
         super().get_prices(frequency=frequency)
         # todo fix dates if mismatched (TEST)
         if self.portfolio.custom_prices:
@@ -44,7 +60,14 @@ class RiskModel(Engine):
                 self.dates = self.dates[-len(self.returns):]
 
     def rolling_factor_exposure(self, method='linear', estimation_period=252, window=22, *args, **kwargs):
-        # estimation_window
+        '''
+        Calculates the rolling risk exposure to the predefined factors based on a selected model.
+
+        :param method: model to be used such as 'linear' or 'PCA': str
+        :param estimation_period: window for estimating the model looking back: int
+        :param window: window for re-estimating the model: int
+        :return: None
+        '''
         self.estimation_period = estimation_period
         self.risk_backtest = {}
 
@@ -76,6 +99,16 @@ class RiskModel(Engine):
 
     def rolling_factor_selection(self, percentile: int, method='linear',
                                  estimation_period=252, window=22, *args, **kwargs):
+        '''
+        Function that creates a spread strategy by selecting securities that are in the top and bottom percentile
+        in the current period for all of the periods in a rolling fashion.
+
+        :param percentile: threshold for the percentile such as 10 for decile, 5 for quintile etc.: int
+        :param method: method used for estimating the risk model: str
+        :param estimation_period: window for estimating the model looking back: int
+        :param window: window for re-estimating the risk model: int
+        :return: None
+        '''
 
         self.estimation_period = estimation_period
         self.risk_selection = {'top_securities': [],
@@ -106,6 +139,12 @@ class RiskModel(Engine):
             raise NotImplementedError
 
     def get_risk_report(self, model: str):
+        '''
+        Displays the general plots and information about the risk model such as rolling betas and current exposure.
+
+        :param model: name of the model: str
+        :return: None
+        '''
         # prepare the df
         df_t = {}
         # rolling beta
@@ -121,6 +160,17 @@ class RiskModel(Engine):
         plot_rolling_beta(df_t)
 
     def _estimate_panel(self, panel, factors, method='linear', *args, **kwargs):
+        '''
+        Helper function for estimating the model in a Fama-Macbeth methodology by estimating each cross-section
+        separately in contrast to panel methods.
+
+        :param panel: matrix of target securities: np.array
+        :param factors: matrix of factors: np.array
+        :param method: method of the model: str
+        :return: alpha_t: intersects of the model: np.array,
+                 beta_t: betas of the model : np.array,
+                 residuals_t: residuals of the model: np.array
+        '''
         # some checks
         assert self.returns is not None
         assert self.returns.shape[0] == self.portfolio.returns.shape[0]
