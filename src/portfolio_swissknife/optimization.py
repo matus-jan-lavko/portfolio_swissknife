@@ -109,7 +109,7 @@ def max_diversification_ratio(sigma, w_prev, constraints: dict):
     w_opt = np.array(problem.x)
     return w_opt
 
-def greedy_optimization(efficient_frontier: list, r_est, maximum, function, function_kwargs):
+def greedy_optimization(efficient_frontier: dict, r_est, maximum, function, function_kwargs):
     '''
     Greedy optimization of a portfolio based on a efficient frontier
 
@@ -120,8 +120,8 @@ def greedy_optimization(efficient_frontier: list, r_est, maximum, function, func
     :param function_kwargs: arg
     :return: optimal weights: np.array
     '''
-    grid_vals = np.zeros(len(efficient_frontier))
-    for idx, solu in enumerate(efficient_frontier):
+    grid_vals = np.zeros(len(efficient_frontier['portfolios']))
+    for idx, solu in enumerate(efficient_frontier['portfolios']):
         r_p = np.dot(solu, r_est.T)
         if function_kwargs:
             grid_vals[idx] = function(r_p, **function_kwargs)
@@ -133,8 +133,9 @@ def greedy_optimization(efficient_frontier: list, r_est, maximum, function, func
     else:
         opt_id = np.argmin(grid_vals)
 
-    w_opt = efficient_frontier[opt_id]
-    return w_opt
+    w_opt = efficient_frontier['portfolios'][opt_id]
+    gamma = efficient_frontier['gamma'][opt_id]
+    return w_opt, gamma
 
 def hierarchical_risk_parity():
     #todo implement
@@ -161,13 +162,17 @@ def quadratic_risk_utility(mu, sigma, constraints: dict, n_, grid_size = 100):
     problem = cp.Problem(objective, constraint_list)
 
     #solve the set of efficient portfolios
-    gamma_grid = np.logspace(0,5, grid_size)
+    gamma_grid = np.linspace(0,10, grid_size)
 
-    efficient_frontier = []
+    #todo rewrite so that you can back out the risk-aversion parameter
+
+    efficient_frontier = {'portfolios':[],
+                          'gamma': []}
     for i in range(grid_size):
         gamma.value = gamma_grid[i]
         problem.solve()
-        efficient_frontier.append(w.value)
+        efficient_frontier['portfolios'].append(w.value)
+        efficient_frontier['gamma'].append(gamma_grid[i])
 
     return efficient_frontier
 

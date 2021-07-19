@@ -56,7 +56,7 @@ def plot_returns(df, r_benchmark, ax = None, title = None, *args, **kwargs):
     labels += ['Benchmark']
     dates = df.index.to_list()
 
-    ax.plot(dates, df, *args, **kwargs)
+    ax.plot(dates, df)
     ax.plot(dates, r_benchmark, alpha=0.8, c='gray', linestyle='--')
     ax.legend(labels)
 

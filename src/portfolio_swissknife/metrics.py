@@ -28,6 +28,9 @@ def annualized_cagr(r, num_periods):
 
     return ((np.prod((1 + r))) ** (num_periods / r.shape[0]) - 1) * 100
 
+def certainty_equivalent(r, num_periods, gamma):
+    raise NotImplementedError
+
 
 def annualized_stdev(r, num_periods, downside=False):
     '''

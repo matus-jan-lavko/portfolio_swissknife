@@ -236,6 +236,7 @@ class Portfolio(Engine):
         #caching backtest attributes
         self.weighting_models = models
         self.estimation_period = estimation_period
+        self.efficient_frontier = None
 
         self.backtest = {}
         self.estimates = {'exp_value' : [],
@@ -248,6 +249,7 @@ class Portfolio(Engine):
             model_results = {'weights': [],
                              'returns': [],
                              'trade_dates':[],
+                             'gamma': [],
                              'opt_time': 0.}
             tic = time.perf_counter()
             num_rebalance = 0
@@ -261,26 +263,26 @@ class Portfolio(Engine):
                 if num_rebalance == 0:
                     w_t = self.start_weights
                     w_prev = w_t
-
+                    gamma = 1
                 #mean-variance specifications
                 elif model == 'MSR':
                     ir_kwargs = {'r_f' : self.discount[trade - self.estimation_period: trade],
                                  'num_periods' : self.trading_days,
                                  'ratio_type': 'sharpe'}
-                    w_t = self._rebalance(mu , sigma, w_prev, model, r_est = r_est, maximum = True,
-                                          function = information_ratio, function_kwargs = ir_kwargs)
+                    w_t, gamma = self._rebalance(mu , sigma, w_prev, model, r_est = r_est, maximum = True,
+                                                 function = information_ratio, function_kwargs = ir_kwargs)
                 elif model == 'MES':
                     var_kwargs = {'alpha' : 0.05,
                                   'exp_shortfall': True,
                                   'dist': 't'}
-                    w_t = self._rebalance(mu , sigma, w_prev, model, r_est = r_est, maximum = False,
-                                          function = var, function_kwargs = var_kwargs)
+                    w_t, gamma = self._rebalance(mu , sigma, w_prev, model, r_est = r_est, maximum = False,
+                                                 function = var, function_kwargs = var_kwargs)
                 elif model == 'MDD':
-                    w_t = self._rebalance(mu, sigma, w_prev, model, r_est = r_est, maximum = False,
-                                          function = max_drawdown, function_kwargs=None)
+                    w_t, gamma = self._rebalance(mu, sigma, w_prev, model, r_est = r_est, maximum = False,
+                                                 function = max_drawdown, function_kwargs=None)
 
                 else:
-                    w_t = self._rebalance(mu, sigma, w_prev, model)
+                    w_t, gamma = self._rebalance(mu, sigma, w_prev, model)
                     #cache
                 w_prev = w_t
 
@@ -292,6 +294,7 @@ class Portfolio(Engine):
                 model_results['returns'].append(r_p)
                 model_results['weights'].append(w_t)
                 model_results['trade_dates'].append(self.dates[trade])
+                model_results['gamma'].append(gamma)
                 num_rebalance += 1
 
             model_results['returns'] = np.vstack(model_results['returns'])
@@ -347,28 +350,34 @@ class Portfolio(Engine):
         '''
         #solve efficient frontier
 
+
         if opt_problem == 'MSR' or opt_problem == 'cVAR' or opt_problem == 'MDD' or opt_problem == 'MES':
             self.efficient_frontier = quadratic_risk_utility(mu, sigma, self.constraints,
                                                                   self.size, 100)
+
         #solve problems
         if opt_problem == 'EW':
             w_opt = np.full((self.size, 1), 1/self.size)
+            gamma = 1
         if opt_problem == 'GMV':
+            gamma = 1
             w_opt = global_minimum_variance(sigma, self.constraints, self.size)
         if opt_problem == 'RP':
+            gamma = 1
             w_opt = risk_parity(sigma,self.constraints, self.size)
         if opt_problem == 'MDR':
             w_opt = max_diversification_ratio(sigma, w_prev, self.constraints)
+            gamma = 1
         if opt_problem == 'MSR':
-            w_opt = greedy_optimization(self.efficient_frontier, *args, **kwargs)
+            w_opt, gamma = greedy_optimization(self.efficient_frontier, *args, **kwargs)
         if opt_problem == 'MES':
-            w_opt = greedy_optimization(self.efficient_frontier, *args, **kwargs)
+            w_opt, gamma = greedy_optimization(self.efficient_frontier, *args, **kwargs)
         if opt_problem == 'MDD':
-            w_opt = greedy_optimization(self.efficient_frontier, *args, **kwargs)
+            w_opt, gamma = greedy_optimization(self.efficient_frontier, *args, **kwargs)
 
 
         w_opt = w_opt.reshape(self.size, 1)
-        return w_opt
+        return w_opt, gamma
 
     def _rolling_estimate(self, estimates_dict, estimation_period, frequency, *args, **kwargs):
         '''
