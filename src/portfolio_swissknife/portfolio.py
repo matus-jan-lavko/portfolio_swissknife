@@ -249,6 +249,7 @@ class Portfolio(Engine):
             model_results = {'weights': [],
                              'returns': [],
                              'trade_dates':[],
+                             'w_change': [],
                              'gamma': [],
                              'opt_time': 0.}
             tic = time.perf_counter()
@@ -283,16 +284,27 @@ class Portfolio(Engine):
 
                 else:
                     w_t, gamma = self._rebalance(mu, sigma, w_prev, model)
+
                     #cache
                 w_prev = w_t
+
+
 
                 #todo implement transaction costs
                 #get current returns and compute out of sample portfolio returns
                 r_t = self._get_state(trade, trade + frequency)
                 r_p = np.dot(r_t, w_t)
-
                 model_results['returns'].append(r_p)
                 model_results['weights'].append(w_t)
+
+                #flatten hotfix
+                w_delta = np.multiply(w_t.flatten(), np.cumprod(1 + r_t, axis = 1)[-1]).flatten()
+                if len(model_results['weights']) > 1:
+                    w_chg = w_delta - w_prev.flatten()
+                else:
+                    w_chg = w_delta
+
+                model_results['w_change'].append(w_chg)
                 model_results['trade_dates'].append(self.dates[trade])
                 model_results['gamma'].append(gamma)
                 num_rebalance += 1
@@ -309,17 +321,24 @@ class Portfolio(Engine):
         :param display_weights: flag for displaying weights plots: bool
         :return: None
         '''
-        #construct the dataframe
+        #construct the dataframes
         bt_rets =  pd.DataFrame({mod : self.backtest[mod]['returns'].flatten()
                                  for mod in self.weighting_models},
                                 index = self.dates[self.estimation_period:])
+        bt_gamma = pd.DataFrame({mod: self.backtest[mod]['gamma']
+                                 for mod in self.weighting_models})
+        bt_gamma_mean = bt_gamma.mean()
         bt_rets_cum = (1+bt_rets).cumprod()
         bmark_rets_cum = (1+self.benchmark[self.estimation_period:]).cumprod()
+
+        #prepare weights
+        w_change_all = {mod : self.backtest[mod]['w_change'] for mod in self.weighting_models}
 
         plot_returns(bt_rets_cum, bmark_rets_cum, *args, **kwargs)
 
         stats = portfolio_summary(bt_rets, self.discount[self.estimation_period:],
-                                  self.benchmark[self.estimation_period:], self.trading_days)
+                                  self.benchmark[self.estimation_period:], w_change = w_change_all,
+                                  num_periods = self.trading_days, gamma = bt_gamma_mean)
         display(stats)
 
         #plot the weights

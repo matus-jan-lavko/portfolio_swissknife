@@ -29,7 +29,10 @@ def annualized_cagr(r, num_periods):
     return ((np.prod((1 + r))) ** (num_periods / r.shape[0]) - 1) * 100
 
 def certainty_equivalent(r, num_periods, gamma):
-    raise NotImplementedError
+    variance = (np.sqrt(num_periods * (np.sum(r - np.mean(r) ** 2) / (r.shape[0] - 1)))) * 100
+    avg_ret = annualized_average_return(r, num_periods)
+    ceq = avg_ret - gamma/2 * variance
+    return ceq
 
 
 def annualized_stdev(r, num_periods, downside=False):
@@ -217,8 +220,24 @@ def pain_ratio(r, num_periods):
     pain_ratio = annualized_average_return(r, num_periods) / pain_index
     return pain_ratio
 
+def turnover(w_change: dict, dof = 1):
+    '''
 
-def portfolio_summary(r, r_f, r_b, num_periods):
+    :param w_change: collection of evolution of all weights of the portfolio: dict
+    :param dof: degrees of freedom while calculating turnover
+    :return: dict
+    '''
+    turnover = {}
+    for mod in w_change:
+        weights = np.array(w_change[mod])
+        t_ = weights.shape[0]
+        turnover[mod] = np.sum(np.sum(np.abs(weights), axis=1), axis=0) / (t_ - dof)
+    return turnover
+
+
+
+
+def portfolio_summary(r, r_f, r_b, w_change, num_periods, gamma):
     '''
     Function for aggregating all the risk performance measures into one table
 
@@ -236,6 +255,7 @@ def portfolio_summary(r, r_f, r_b, num_periods):
                                        num_periods=num_periods).map('{:,.2f}%'.format),
         'CAGR': r.aggregate(annualized_cagr, num_periods=num_periods).map('{:,.2f}%'.format),
         'Volatility': r.aggregate(annualized_stdev, num_periods=num_periods).map('{:,.2f}%'.format),
+        'CEQ': certainty_equivalent(r, num_periods = num_periods, gamma = gamma),
         'Max DD': r.aggregate(max_drawdown).map('{:,.2f}%'.format),
         # 'Max DD Duration': r.aggregate(max_drawdown_duration).map('{:,.0f}'.format),
         'Skewness': r.aggregate(skewness).map('{:,.2f}'.format),
@@ -247,6 +267,7 @@ def portfolio_summary(r, r_f, r_b, num_periods):
         'Calmar Ratio': r.aggregate(information_ratio, r_f=r_f, ratio_type='calmar',
                                     num_periods=num_periods).map('{:,.2f}'.format),
         'Pain Ratio': r.aggregate(pain_ratio, num_periods=num_periods).map('{:,.2f}'.format),
+        'Turnover': (pd.Series(turnover(w_change, dof = 1))*100).map('{:,.2f}%'.format),
         'Reward to 95% Var': r.aggregate(reward_to_var, num_periods=num_periods,
                                          alpha=0.05, dist='t').map('{:,.2f}'.format),
         'Reward to 95% cVar': r.aggregate(reward_to_var, num_periods=num_periods,
