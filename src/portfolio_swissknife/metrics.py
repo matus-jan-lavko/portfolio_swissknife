@@ -235,8 +235,6 @@ def turnover(w_change: dict, dof = 1):
     return turnover
 
 
-
-
 def portfolio_summary(r, r_f, r_b, w_change, num_periods, gamma):
     '''
     Function for aggregating all the risk performance measures into one table

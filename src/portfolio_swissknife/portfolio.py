@@ -285,10 +285,8 @@ class Portfolio(Engine):
                 else:
                     w_t, gamma = self._rebalance(mu, sigma, w_prev, model)
 
-                    #cache
+                #cache
                 w_prev = w_t
-
-
 
                 #todo implement transaction costs
                 #get current returns and compute out of sample portfolio returns
@@ -471,7 +469,8 @@ class FactorPortfolio(Portfolio):
         '''
         return super(FactorPortfolio, self)._get_state(t_0, t_1)[:, filter]
 
-    def historical_backtest(self, models = ['EW', 'GMV', 'RP'], frequency = 22,
+    def historical_backtest(self, models = ['EW', 'GMV', 'RP'], long_only = True,
+                            long_exposure = 1, short_exposure = 0.3, frequency = 22,
                             estimation_period = 252, *args, **kwargs):
         '''
         Conducts a historical backtest as a long-only or a long-short spread of the factor portfolio.
@@ -510,22 +509,27 @@ class FactorPortfolio(Portfolio):
             model_results = {'returns': [],
                              'weights': [],
                              'trade_dates': [],
+                             'gamma': [],
+                             'w_change': [],
                              'opt_time': 0.}
             tic = time.perf_counter()
             num_rebalance = 0
 
             for trade in range(estimation_period, self.returns.shape[0], frequency):
                 # solve optimization starting with start_weights
-                idx_selected = self.risk_model.risk_selection['top_idx'][num_rebalance][:, self.factor_idx]
+                idx_selected_long = self.risk_model.risk_selection['top_idx'][num_rebalance][:, self.factor_idx]
+                idx_selected_short = self.risk_model.risk_selection['bottom_idx'][num_rebalance][:, self.factor_idx]
                 mu = self.estimates_top['exp_value'][num_rebalance]
                 sigma = self.estimates_top['cov_matrix'][num_rebalance]
-                r_est = self._get_state(trade - estimation_period, trade, idx_selected)
+                r_est = self._get_state(trade - estimation_period, trade, idx_selected_long)
 
                 self.size = len(self.risk_model.risk_selection['top_idx'][num_rebalance][:,self.factor_idx])
                 #todo finish the backtest!!!
 
                 if num_rebalance == 0:
                     w_t = self.start_weights
+                    w_prev = w_t
+                    gamma = 1
 
                 elif model == 'MDR':
                     raise ValueError('MDR is not supported for FactorPortfolio.')
@@ -534,32 +538,50 @@ class FactorPortfolio(Portfolio):
                     ir_kwargs = {'r_f': self.discount[trade - self.estimation_period: trade],
                                  'num_periods': self.trading_days,
                                  'ratio_type': 'sharpe'}
-                    w_t = self._rebalance(mu, sigma, w_prev, model, r_est=r_est, maximum=True,
+                    w_t, gamma = self._rebalance(mu, sigma, w_prev, model, r_est=r_est, maximum=True,
                                           function=information_ratio, function_kwargs=ir_kwargs)
                 elif model == 'MES':
                     var_kwargs = {'alpha': 0.05,
                                   'exp_shortfall': True,
                                   'dist': 't'}
-                    w_t = self._rebalance(mu, sigma, w_prev, model, r_est=r_est, maximum=False,
+                    w_t, gamma = self._rebalance(mu, sigma, w_prev, model, r_est=r_est, maximum=False,
                                           function=var, function_kwargs=var_kwargs)
                 elif model == 'MDD':
-                    w_t = self._rebalance(mu, sigma, w_prev, model, r_est=r_est, maximum=False,
+                    w_t, gamma = self._rebalance(mu, sigma, w_prev, model, r_est=r_est, maximum=False,
                                           function=max_drawdown, function_kwargs=None)
 
                 else:
-                    w_t = self._rebalance(mu, sigma, w_prev, model)
-                    # cache
+                    w_t, gamma = self._rebalance(mu, sigma, w_prev, model)
+
+                # cache
                 w_prev = w_t
 
                 # todo implement transaction costs
                 # get current returns and compute out of sample portfolio returns
-                r_t = self._get_state(trade, trade + frequency, idx_selected)
-                r_p = np.dot(r_t, w_t)
+                r_t_long = self._get_state(trade, trade + frequency, idx_selected_long)
+                r_p_long = np.dot(r_t_long, w_t)
 
-                # todo implement short side of the portfolio!!!
+                # equal weight short side TODO: implement different weighing schemes and estimation
+                if not long_only:
+                    r_t_short = self._get_state(trade, trade + frequency, idx_selected_short)
+                    w_t_short, gamma = self._rebalance(mu, sigma, w_prev, opt_problem = 'EW')
+                    w_t_short *= -1
+                    r_p_short = np.dot(r_t_short, w_t_short)
+                    r_p = long_exposure*r_p_long.flatten() + short_exposure*r_p_short.flatten()
+                else:
+                    r_p = long_exposure*r_p_long
+
+                # TODO fix turnover calculation to match changing securities
+                w_delta = np.multiply(w_t.flatten(), np.cumprod(1 + r_t_long, axis=1)[-1]).flatten()
+                if len(model_results['weights']) > 1:
+                    w_chg = w_delta - w_prev.flatten()
+                else:
+                    w_chg = w_delta
 
                 model_results['returns'].append(r_p.flatten())
                 model_results['weights'].append(w_t)
+                model_results['gamma'].append(gamma)
+                model_results['w_change'].append(w_chg)
                 model_results['trade_dates'].append(self.dates[trade])
                 num_rebalance += 1
 

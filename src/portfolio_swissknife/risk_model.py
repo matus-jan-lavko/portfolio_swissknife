@@ -4,6 +4,11 @@ from .estimation import linear_factor_model
 from .plotting import plot_rolling_beta
 from .portfolio import Portfolio, Engine
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+from sklearn.pipeline import Pipeline
+
 
 class RiskModel(Engine):
     '''
@@ -11,14 +16,20 @@ class RiskModel(Engine):
     a pricing model.
 
     '''
-    def __init__(self, portfolio: Portfolio, factors: list):
+    def __init__(self, portfolio: Portfolio, factors = None):
         '''
 
         :param portfolio: portfolio to analyze: Portfolio
         :param factors: tickers or names of factors to be included: list of str
         '''
         # factors in the risk_model
-        self.factors = factors
+        if isinstance(factors, list):
+            self.factors = factors
+        elif not factors:
+            self.factors = None
+        else:
+            raise ValueError('Factors need to be a list.')
+
         self.portfolio = portfolio
 
         # Portfolio derived attributes
@@ -80,7 +91,7 @@ class RiskModel(Engine):
 
                 for est in range(self.estimation_period, self.returns.shape[0], window):
                     Y_t = self.portfolio.backtest[mod]['returns'][est - self.estimation_period: est]
-                    X_t = self.returns[est - self.estimation_period: est]
+                    X_t = self._get_state(est - self.estimation_period, est)
                     alpha_t, beta_t, residuals_t = linear_factor_model(Y_t, X_t, *args, **kwargs)
 
                     # append results
@@ -91,11 +102,60 @@ class RiskModel(Engine):
 
                 self.risk_estimates['alpha'] = np.vstack(self.risk_estimates['alpha'])
                 self.risk_estimates['beta'] = np.vstack(self.risk_estimates['beta'])
-                self.risk_estimates['residuals'] = np.array(self.risk_estimates['residuals'])
+                self.risk_estimates['residuals'] = np.array(self.risk_estimates['residuals'], dtype=object)
                 self.risk_backtest[mod] = self.risk_estimates
 
         elif method == 'PCA':
+            for mod in self.portfolio.backtest.keys():
+                self.risk_estimates = {'principal_components': [],
+                                       'explained_variance_ratio': [],
+                                       'singular_values': [],
+                                       'alpha': [],
+                                       'beta': [],
+                                       'residuals': [],
+                                       'estimation_dates': []}
+
+                for est in range(self.estimation_period, self.portfolio.returns.shape[0], window):
+
+                    #decompose
+                    X_t = self.portfolio._get_state(est - self.estimation_period, est)
+                    pca = Pipeline([('scaling', StandardScaler()),
+                                    ('pca', PCA(*args, **kwargs))])
+
+                    pca.fit_transform(X_t.T)
+                    
+                    #append results
+                    self.risk_estimates['principal_components'].append(pca[1].components_.T)
+                    self.risk_estimates['explained_variance_ratio'].append(pca[1].explained_variance_ratio_)
+                    self.risk_estimates['singular_values'].append(pca[1].singular_values_)
+
+                    #estimate exposures
+                    Y_t = self.portfolio.backtest[mod]['returns'][est - self.estimation_period: est]
+                    PCA_t = self.risk_estimates['principal_components'][-1]
+
+                    alpha_t, beta_t, residuals_t = linear_factor_model(Y_t, PCA_t[:Y_t.shape[0],:])
+
+                    # append results
+                    self.risk_estimates['alpha'].append(alpha_t)
+                    self.risk_estimates['beta'].append(beta_t)
+                    self.risk_estimates['residuals'].append(residuals_t)
+                    self.risk_estimates['estimation_dates'].append(self.portfolio.dates[est])
+
+                    #break if at end
+                    if not self.factors:
+                        self.factors = list(np.arange(1, pca[1].n_components + 1))
+                        self.factors = list(map(lambda x: 'PC ' + str(x), self.factors))
+
+                    if Y_t.shape[0] < self.estimation_period: break
+
+                #process
+                self.risk_estimates['alpha'] = np.vstack(self.risk_estimates['alpha'])
+                self.risk_estimates['beta'] = np.vstack(self.risk_estimates['beta'])
+                self.risk_estimates['residuals'] = np.array(self.risk_estimates['residuals'], dtype=object)
+                self.risk_backtest[mod] = self.risk_estimates
+        else:
             raise NotImplementedError
+
 
     def rolling_factor_selection(self, percentile: int, method='linear',
                                  estimation_period=252, window=22, *args, **kwargs):
@@ -126,7 +186,7 @@ class RiskModel(Engine):
                 pct = int(len(self.portfolio.securities) / percentile)
 
                 top_idx = sort2d[-pct:]
-                bottom_idx = sort2d[pct:]
+                bottom_idx = sort2d[:pct]
                 top_q_names = np.array(self.portfolio.securities)[top_idx]
                 bottom_q_names = np.array(self.portfolio.securities)[bottom_idx]
 
@@ -150,6 +210,7 @@ class RiskModel(Engine):
         # rolling beta
         for mod in self.risk_backtest.keys():
             df_t[mod] = self.risk_backtest[mod]['beta']
+
         df_t = pd.DataFrame(df_t[model], columns=self.factors,
                             index=self.risk_backtest[model]['estimation_dates'])
         # all models end exposure
