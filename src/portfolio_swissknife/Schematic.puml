@@ -1,0 +1,57 @@
+@startuml
+
+abstract class Engine {
+    + securities: list
+    + size: int
+    + prices: pd.DataFrame
+    + returns: np.Array
+    + dates: list
+    + custom_prices: pd.DataFrame
+    + trading_days: int
+    + period: tuple
+    + np.Array _get_state(t_0, t_1)
+    + void set_period(period)
+    + void get_prices(frequency)
+    + void set_custom_prices(pd.DataFrame, frequency)
+}
+
+class Portfolio {
+}
+
+class FactorPortfolio {
+
+}
+
+class CustomPortfolio {
+
+}
+
+class RiskModel {
+
+}
+
+abstract class optimization {
+    + None
+}
+
+abstract class estimation {
+    + None
+}
+
+
+abstract class metrics {
+    + None
+}
+
+abstract class plotting {
+
+}
+
+
+
+Engine <|-- Portfolio
+FactorPortfolio <|-- Portfolio
+CustomPortfolio <|-- Portfolio
+RiskModel <|-- Engine
+
+@enduml
