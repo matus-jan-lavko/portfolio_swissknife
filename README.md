@@ -4,6 +4,6 @@ This is a project on developing a fast and reliable end-to-end tool to test inve
 
 ## Dependencies
 
-The project and the notebooks have been developed on **python = 3.6.0** The dependencies will be added soon.
+The project and the notebooks have been developed on **python >= 3.6.0** The dependencies will be added soon.
 
 
