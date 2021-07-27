@@ -14,6 +14,7 @@ class Engine:
     encapsulated within the class and a new class has to be instantiated in order to carry out analysis in different
     time frames.
     '''
+
     def __init__(self, securities: list):
         self.securities = securities
         self.size = int(len(self.securities))

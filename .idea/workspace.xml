@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="0f870dc4-abde-4567-b013-19c42890d1ea" name="Default Changelist" comment="long short">
+      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1uIyEiLH2dgo7lfE9uVvAg6R0Cz" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\matus\pysource\portfolio-swissknife\src" />
+      <recent name="C:\Users\matus\pysource\portfolio-swissknife\portfolio-swissknife" />
+      <recent name="C:\Users\matus\pysource\portfolio-swissknife\tests" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.portfolio_test">
+    <configuration name="portfolio" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="portfolio_swissknife" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\matus\pysource\portfolio-swissknife\portfolio-swissknife\portfolio.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="portfolio_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="portfolio_swissknife" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="C:\Users\matus\pysource\portfolio-swissknife\tests\portfolio_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.portfolio_test" />
+        <item itemvalue="Python.portfolio" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="0f870dc4-abde-4567-b013-19c42890d1ea" name="Default Changelist" comment="" />
+      <created>1624367288136</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1624367288136</updated>
+    </task>
+    <task id="LOCAL-00001" summary="created portfolio class">
+      <created>1624441921672</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1624441921672</updated>
+    </task>
+    <task id="LOCAL-00002" summary="added estimation methods">
+      <created>1624526858680</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1624526858680</updated>
+    </task>
+    <task id="LOCAL-00003" summary="finished backtest logic">
+      <created>1624612366992</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1624612366992</updated>
+    </task>
+    <task id="LOCAL-00004" summary="finished estimation">
+      <created>1624863857429</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1624863857429</updated>
+    </task>
+    <task id="LOCAL-00005" summary="finished constraints">
+      <created>1624918030086</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1624918030086</updated>
+    </task>
+    <task id="LOCAL-00006" summary="finished ERP, started working on plots">
+      <created>1625013128756</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1625013128756</updated>
+    </task>
+    <task id="LOCAL-00007" summary="adding example">
+      <created>1625013214234</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1625013214234</updated>
+    </task>
+    <task id="LOCAL-00008" summary="working on plots">
+      <created>1625086587148</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1625086587149</updated>
+    </task>
+    <task id="LOCAL-00009" summary="working on metrics.py">
+      <created>1625175467212</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1625175467212</updated>
+    </task>
+    <task id="LOCAL-00010" summary="finished optimization">
+      <created>1625647357469</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1625647357469</updated>
+    </task>
+    <task id="LOCAL-00011" summary="RiskModel.estimate dev">
+      <created>1625730271214</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1625730271214</updated>
+    </task>
+    <task id="LOCAL-00012" summary="working on rolling btest plots">
+      <created>1625752114433</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1625752114433</updated>
+    </task>
+    <task id="LOCAL-00013" summary="added documentation">
+      <created>1626615861616</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1626615861617</updated>
+    </task>
+    <task id="LOCAL-00014" summary="ceq and gamma">
+      <created>1626689623362</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1626689623362</updated>
+    </task>
+    <task id="LOCAL-00015" summary="added turnover for main pf class">
+      <created>1626894882669</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1626894882669</updated>
+    </task>
+    <task id="LOCAL-00016" summary="long short">
+      <created>1627245012136</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1627245012136</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="created portfolio class" />
+    <MESSAGE value="added estimation methods" />
+    <MESSAGE value="finished backtest logic" />
+    <MESSAGE value="finished estimation" />
+    <MESSAGE value="finished constraints" />
+    <MESSAGE value="finished ERP, started working on plots" />
+    <MESSAGE value="adding example" />
+    <MESSAGE value="working on plots" />
+    <MESSAGE value="working on metrics.py" />
+    <MESSAGE value="finished optimization" />
+    <MESSAGE value="RiskModel.estimate dev" />
+    <MESSAGE value="working on rolling btest plots" />
+    <MESSAGE value="packaging" />
+    <MESSAGE value="added documentation" />
+    <MESSAGE value="ceq and gamma" />
+    <MESSAGE value="added turnover for main pf class" />
+    <MESSAGE value="long short" />
+    <option name="LAST_COMMIT_MESSAGE" value="long short" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="2026" y="197" key="#Inspections" timestamp="1625129607239">
+      <screen x="1920" y="-21" width="1920" height="1080" />
+    </state>
+    <state x="2026" y="197" key="#Inspections/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1625129607239" />
+    <state x="602" y="263" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1625998014908">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="602" y="263" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1707.920@0.0.1707.920" timestamp="1625998014908" />
+    <state x="4100" y="107" key="FileChooserDialogImpl" timestamp="1626699291328">
+      <screen x="3840" y="-191" width="1920" height="1080" />
+    </state>
+    <state x="4100" y="107" key="FileChooserDialogImpl/0.0.1707.920/3840.-191.1920.1080@3840.-191.1920.1080" timestamp="1626699291328" />
+    <state width="1686" height="239" key="GridCell.Tab.0.bottom" timestamp="1624612419399">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state width="1417" height="289" key="GridCell.Tab.0.bottom/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624447119245" />
+    <state width="1686" height="239" key="GridCell.Tab.0.bottom/0.0.1707.920@0.0.1707.920" timestamp="1624612419399" />
+    <state width="1686" height="239" key="GridCell.Tab.0.center" timestamp="1624612419399">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state width="1417" height="289" key="GridCell.Tab.0.center/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624447119245" />
+    <state width="1686" height="239" key="GridCell.Tab.0.center/0.0.1707.920@0.0.1707.920" timestamp="1624612419399" />
+    <state width="1686" height="239" key="GridCell.Tab.0.left" timestamp="1624612419399">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state width="1417" height="289" key="GridCell.Tab.0.left/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624447119245" />
+    <state width="1686" height="239" key="GridCell.Tab.0.left/0.0.1707.920@0.0.1707.920" timestamp="1624612419399" />
+    <state width="1686" height="239" key="GridCell.Tab.0.right" timestamp="1624612419399">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state width="1417" height="289" key="GridCell.Tab.0.right/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624447119245" />
+    <state width="1686" height="239" key="GridCell.Tab.0.right/0.0.1707.920@0.0.1707.920" timestamp="1624612419399" />
+    <state x="4060" y="2" key="SettingsEditor" timestamp="1626773452335">
+      <screen x="3840" y="-191" width="1920" height="1080" />
+    </state>
+    <state x="4060" y="2" key="SettingsEditor/0.0.1707.920/3840.-191.1920.1080@3840.-191.1920.1080" timestamp="1626773452335" />
+    <state x="4060" y="-68" key="SettingsEditor/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624441211117" />
+    <state x="196" y="164" key="SettingsEditor/0.0.1707.920@0.0.1707.920" timestamp="1626000562992" />
+    <state x="2140" y="172" key="SettingsEditor/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1624866437972" />
+    <state x="284" y="233" key="Vcs.Push.Dialog.v2" timestamp="1627245032577">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="4159" y="83" key="Vcs.Push.Dialog.v2/0.0.1707.920/3840.-191.1920.1080@3840.-191.1920.1080" timestamp="1626689628322" />
+    <state x="4159" y="12" key="Vcs.Push.Dialog.v2/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624441926873" />
+    <state x="284" y="233" key="Vcs.Push.Dialog.v2/0.0.1707.920@0.0.1707.920" timestamp="1627245032577" />
+    <state x="2239" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1625752117675" />
+    <state x="2239" y="237" key="Vcs.Push.Dialog.v2/1920.-21.1920.1016/0.0.1920.1016@1920.-21.1920.1016" timestamp="1625730285447" />
+    <state x="485" y="387" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1627244915892">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="4386" y="263" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1707.920/3840.-191.1920.1080@3840.-191.1920.1080" timestamp="1626689606016" />
+    <state x="4385" y="193" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624441910027" />
+    <state x="485" y="387" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1707.920@0.0.1707.920" timestamp="1627244915892" />
+    <state x="2466" y="433" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1625752093535" />
+    <state x="2466" y="406" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/1920.-21.1920.1016/0.0.1920.1016@1920.-21.1920.1016" timestamp="1625730242819" />
+    <state x="4794" y="-191" width="972" height="1086" key="dock-window-1" timestamp="1626695970758">
+      <screen x="3840" y="-191" width="1920" height="1080" />
+    </state>
+    <state x="4794" y="-191" width="972" height="1086" key="dock-window-1/0.0.1707.920/3840.-191.1920.1080@0.0.1707.920" timestamp="1626695970758" />
+    <state x="848" y="0" width="864" height="925" key="dock-window-1/0.0.1707.920@0.0.1707.920" timestamp="1626693216505" />
+    <state x="554" y="200" width="672" height="678" key="search.everywhere.popup" timestamp="1627196789999">
+      <screen x="0" y="0" width="1707" height="920" />
+    </state>
+    <state x="4463" y="-26" key="search.everywhere.popup/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624439065459" />
+    <state x="554" y="200" width="672" height="678" key="search.everywhere.popup/0.0.1707.920@0.0.1707.920" timestamp="1627196789999" />
+    <state x="2543" y="214" width="756" height="796" key="search.everywhere.popup/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1625211222918" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/portfolio_swissknife/metrics.py</url>
+          <line>15</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
