@@ -38,7 +38,6 @@ class RiskModel(Engine):
         self.set_period(self.portfolio.period)
 
         # Engine securities pointer
-        # Engine securities pointer
         self.securities = self.factors
 
     def __call__(self):

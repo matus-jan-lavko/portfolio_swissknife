@@ -1,0 +1,110 @@
+@startuml
+
+abstract class Engine {
+    + securities: list
+    + size: int
+    + prices: pd.DataFrame
+    + returns: np.Array
+    + dates: list
+    + custom_prices: pd.DataFrame
+    + trading_days: int
+    + period: tuple
+    + np.Array _get_state(t_0: int, t_1: int)
+    + void set_period(period: tuple)
+    + void get_prices(frequency: int)
+    + void set_custom_prices(df: pd.DataFrame, frequency: int)
+}
+
+class Portfolio {
+    + securities: list
+    + size: int
+    + prices: pd.DataFrame
+    + returns: np.Array
+    + dates: list
+    + custom_prices: pd.DataFrame
+    + trading_days: int
+    + period: tuple
+    + estimation_method: list
+    + start_weights: np.Array
+    + benchmark: np.Array
+    + transaction_cost: int
+    + weighting_models: list
+    + estimation_period: int
+    + efficient_frontier: dict
+    + backtest: dict
+    + estimates: dict
+    + np.Array super._get_state(t_0, t_1)
+    + void super.set_period(period)
+    + void super.get_prices(frequency)
+    + void super.set_custom_prices(df: pd.DataFrame, frequency: int)
+    + void set_benchmark(benchmark: str)
+    + void set_discount(discount: str)
+    + void set_transaction_cost(transaction_cost: int)
+    + void set_constraints(constraint_dict: dict, default: bool)
+    + void historical_backtest(models: list, frequency: int, estimation_period: int, *args, **kwargs)
+    + void get_backtest_report(display_weights: bool, *args, **kwargs)
+    + private np.Array, int _rebalance(mu: np.Array, sigma: np.Array, w_prev: np.Array, opt_problem:set_transaction_cost, *args, **kwargs)
+    + private dict _rolling_estimate(estimates_dict; dict, estimation_period: int, frequency: int, *args, **kwargs)
+    + private np.Array _rolling_estimate(estimator: function, r_est: np.Array, *args, **kwargs)
+}
+
+class FactorPortfolio {
+    + universe: Portfolio
+    + risk_model: RiskModel
+    + returns: np.Array
+    + estimation_period: int
+    + dates: list
+    + trading_days: int
+    + period: tuple
+    + factor_idx: list
+    + size: int
+    + start_weights: np.Array
+    + weighting_models: list
+    + backtest: dict
+    + estimates_top: dict
+    + estimates_bottom: dict
+    + void _get_state(t_0: int, t_1: int, filter: list)
+    + void historical_backtest(models: list, long_only: bool, long_exposure: int, short_exposure: int, frequency: int, estimation_period: int, *args, **kwargs)
+    + private dict _rolling_estimate(estimates_dict: dict, estimation_period: int, frequency: int, security_filter: list, *args, **kwargs)
+}
+
+class CustomPortfolio {
+
+}
+
+class MLPortfolio{
+
+}
+
+class RiskModel {
+    + portfolio: Portfolio
+    + securities: list
+    + factors: list
+    + size: int
+    + prices: pd.DataFrame
+    + returns: np.Array
+    + dates: list
+    + period: tuple
+    + risk_backtest: dict
+    + risk_estimates: dict
+    + risk_selection: dict
+    + void get_prices(frequency)
+    + void rolling_factor_exposure(method: str, estimation_period: int, window: int, *args, **kwargs)
+    + void rolling_factor_selection(percentile: int, method: str, estimation_period: int, window: int, *args, **kwargs)
+    + void get_risk_report(model: str)
+    + private np.Array, np.Array, np.Array _estimate_panel(panel: np.Array, factors: np.Array, method: str, *args, **kwargs)
+
+}
+
+allowmixing
+
+Portfolio --|> Engine
+FactorPortfolio --|> Portfolio
+CustomPortfolio --|> Portfolio
+MLPortfolio --|> Portfolio
+RiskModel --|> Engine
+
+'RiskModel --> FactorPortfolio
+'Portfolio --> RiskModel
+
+@enduml
