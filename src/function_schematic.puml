@@ -1,0 +1,55 @@
+@startuml
+
+abstract class optimization {
+    + np.Array global_minimum_variance(sigma: np.Array, constraints: dict, n_: int)
+    + np.Array risk_parity(sigma: np.Array, constraints: dict, n_: int)
+    + np.Array max_diversification_ratio(sigma: np.Array, w_prev: np.Array, constraints: dict)
+    + np.Array, int greedy_optimization(efficient_frontier: dict, r_est: np.Array, maximum: bool, function: function, function_kwargs: dict)
+    + dict quadratic_risk_utility(mu: np.Array, sigma:np.Array, constraints: dict, estimation_period: int, grid_size: int)
+    + private float _portfolio_variance(w: np.Array, sigma: np.Array)
+    + private dict _build_constraints_cvxpy(w_obj: cp.Variable, constraints: dict)
+    + private tuple _build_constraints_scipy(constraints: dict)
+}
+
+abstract class estimation {
+    + float mean_return_historic(r: np.Array)
+    + float ema_return_historic(r: np.Array)
+    + np.Array sample_cov(r: np.Array)
+    + np.Array elton_gruber_cov(r: np.Array)
+    + np.Array shrinkage_cov(r: np.Array, delta: int, prior_model: function, *args, **kwargs)
+    + np.Array, np.Array, np.Array linear_factor_model(Y: np.Array, X: np.Array, kernel: np.Array, regularize: str)
+    + private np.Array _ewma_vectorized(data: np.Array, alpha: float, offset: int, dtype: type, order: str, out: type)
+    + private np.Array _ewma_vectorized_2d(data: np.Array, window: int, axis: int, offset: int, dtype: type, order: str, out: type)
+}
+
+
+abstract class metrics {
+    + float annualized_average_return(r: np.Array, num_periods: int)
+    + float annualized_cagr(r: np.Array, num_periods: int)
+    + float certainty_equivalent(r: np.Array. num_periods: int, gamma; float)
+    + float annualized_stdev(r: np.Array, num_periods: int, donwside: bool)
+    + float skewness(r: np.Array)
+    + float kurtosis(r: np.Array)
+    + float coskewness(r: np.Array, r_b: np.Array)
+    + float cokurtosis(r: np.Array, r_b: np.Array)
+    + float max_drawdown(r: np.Array)
+    + float max_drawdown_duration(r: np.Array)
+    + float information_ratio(r: np.Array, r_f: np.Array, num_periods: int, ratio_type: str)
+    + float var(r: np.Array, alpha: float, exp_shortfall: bool, dist: str)
+    + float reward_to_var(r: np.Array,num_periods: int, *args, **kwargs)
+    + float pain_ratio(r: np.Array, num_periods: int)
+    + float turnover(w_change: np.Array, dof: int)
+    + pd.DataFrame portfolio_summary(r: np.Array, r_f: np.Array, r_b: np.Array, w_change: np.Array, num_periods: int, gamma: float)
+    + private np.Array max_drawdown(r: np.Array)
+
+
+}
+
+abstract class plotting {
+    + void plot_rolling_beta(df: pd.DataFrame)
+    + plt.axis plot_returns(df: pd.DataFrame, r_benchmark: pd.Series, ax: plt.axis, title: str, *args, **kwargs)
+    + void plot_weights(weights_dict: dict, models: list, num_rows: int, ax: plt.axis, *args, **kwargs)
+    + private plt.axis _plot_stacked_weights(df: pd.DataFrame, model: str, ax: plt.axis, *args, **kwargs)
+}
+
+@enduml
