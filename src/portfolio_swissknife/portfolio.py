@@ -632,6 +632,29 @@ class CustomPortfolio(Portfolio):
 
         self.backtest = bt_rets
 
+class MLPortfolio(Portfolio):
+    '''
+
+    ML Portfolio class that takes in a prespecified model and allows the user to backtest an ML strategy within the
+    portfolio framework.
+    '''
+
+    def __init__(self, universe: Portfolio, ml_model, start_weights = None):
+        self.universe = universe
+        self.ml_model = ml_model
+        self.returns = self.universe.returns
+        self.estimation_method = [mean_return_historic, sample_cov]
+        self.dates = self.risk_model.dates
+        self.trading_days = self.universe.trading_days
+        self.period = self.risk_model.period
+
+        if start_weights:
+            self.start_weights = start_weights
+        else:
+            self.start_weights = np.empty(self.size, dtype = float)
+            self.start_weights.fill(1/self.size)
+
+    #todo finish
 
 
 

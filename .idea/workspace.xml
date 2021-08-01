@@ -23,12 +23,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0f870dc4-abde-4567-b013-19c42890d1ea" name="Default Changelist" comment="long short">
-      <change afterPath="$PROJECT_DIR$/src/class_schematic.puml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/function_schematic.puml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/examples/03_ml_portfolio.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/portfolio_swissknife/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/Schematic.puml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/risk_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/risk_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/02_portfolio_construction.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/examples/02_portfolio_construction.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/risk_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/models.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,8 +39,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="UML Sequence" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>

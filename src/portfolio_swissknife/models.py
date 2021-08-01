@@ -245,3 +245,25 @@ class RiskModel(Engine):
             raise NotImplementedError
 
         return alpha_t, beta_t, residuals_t
+
+class PredictionModel(Engine):
+    '''
+
+    A prediction model that allows the user to construct a strategy driven by a statistical model
+    '''
+
+    def __init__(self, portfolio: Portfolio, features):
+        self.portfolio = portfolio
+        self.features = features
+
+        #portfolio derived attributes
+        self.dates = portfolio.dates[(portfolio.estimation_period - 1):]  # offset for returns calculation
+        self.set_period(self.portfolio.period)
+
+    def set_prediction_model(self, function):
+        if not callable(function):
+            raise TypeError('Prediction model needs to be of type types.FunctionType!')
+        else:
+            self.model = function
+
+
