@@ -397,3 +397,38 @@ def get_bins(triple_barrier_events, close):
     out_df
 
     return out_df
+
+#ideas for datahandler
+import functools
+
+
+class DataHandler:
+    # Rewrite so that it can be applicable at __init__ of more complex portfolios
+    def __init__(self, func):
+        functools.update_wrapper(self, func)
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        # identify args
+        args = list(args)
+        for arg in args:
+            if isinstance(arg, pd.Series) or isinstance(arg, pd.DataFrame):
+                if arg.shape[0] == 1 or arg.shape[1] == 1:
+                    y_old = arg
+                else:
+                    x_old = arg
+
+        # merge and align data
+        m1 = pd.merge(y_old, x_old, left_on=y_old.index,
+                      right_on=x_old.index,
+                      how='right')
+        m1.index = m1['key_0']
+        m1 = m1.drop('key_0', axis=1)
+        m1 = m1.fillna(method='ffill').dropna()
+
+        y_new = m1.iloc[:, 0]
+        x_new = m1.iloc[:, 1:]
+        new_args = {'y': y_new,
+                    'X': x_new}
+
+        self.func(**new_args)
