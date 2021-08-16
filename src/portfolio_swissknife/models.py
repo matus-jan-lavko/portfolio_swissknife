@@ -171,7 +171,7 @@ class RiskModel(Engine):
         '''
 
         self.estimation_period = estimation_period
-        self.risk_selection = {'top_securities': [],
+        self.asset_selection = {'top_securities': [],
                                'bottom_securities': [],
                                'top_idx': [],
                                'bottom_idx': []}
@@ -190,10 +190,10 @@ class RiskModel(Engine):
                 top_q_names = np.array(self.portfolio.securities)[top_idx]
                 bottom_q_names = np.array(self.portfolio.securities)[bottom_idx]
 
-                self.risk_selection['top_idx'].append(top_idx)
-                self.risk_selection['bottom_idx'].append(bottom_idx)
-                self.risk_selection['top_securities'].append(top_q_names)
-                self.risk_selection['bottom_securities'].append(bottom_q_names)
+                self.asset_selection['top_idx'].append(top_idx)
+                self.asset_selection['bottom_idx'].append(bottom_idx)
+                self.asset_selection['top_securities'].append(top_q_names)
+                self.asset_selection['bottom_securities'].append(bottom_q_names)
 
         else:
             raise NotImplementedError
@@ -330,6 +330,45 @@ class PredictionModel(Engine):
                 preds.append(pred_i_t)
 
             self.prediction_measure[stock] = preds
+
+    def load_pretrained_model(self, data):
+        if not hasattr(self, 'prediction_measure'):
+            self.prediction_measure = {}
+
+        if isinstance(data, pd.DataFrame):
+            data = data.to_dict()
+
+        if isinstance(data, list):
+            for dict in data:
+                self.prediction_measure = {**self.prediction_measure, **dict}
+        else:
+            self.prediction_measure = {**self.prediction_measure, **data}
+
+
+    def rolling_spread_selection(self, percentile, window = 1):
+
+        self.prediction_measure = pd.DataFrame(self.prediction_measure)
+        self.asset_selection = {'top_securities': [],
+                               'bottom_securities': [],
+                               'top_idx': [],
+                               'bottom_idx': []}
+
+        for est in range(0, self.prediction_measure.shape[0], window):
+            sort = np.argsort(self.prediction_measure.iloc[est], axis = 0)
+            pct = int(len(self.portfolio.securities) / percentile)
+
+            top_idx = sort[-pct:]
+            bottom_idx = sort[:pct]
+            top_q_names = np.array(self.portfolio.securities)[top_idx]
+            bottom_q_names = np.array(self.portfolio.securities)[bottom_idx]
+
+            self.asset_selection['top_idx'].append(top_idx.values)
+            self.asset_selection['bottom_idx'].append(bottom_idx.values)
+            self.asset_selection['top_securities'].append(top_q_names)
+            self.asset_selection['bottom_securities'].append(bottom_q_names)
+
+
+
 
 
 

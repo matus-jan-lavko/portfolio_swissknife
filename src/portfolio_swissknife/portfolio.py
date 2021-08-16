@@ -449,7 +449,7 @@ class FactorPortfolio(Portfolio):
         else:
             raise ValueError('Factor not specified in your model!')
 
-        self.size =  self.size = len(self.risk_model.risk_selection['top_idx'][0][:,self.factor_idx])
+        self.size =  self.size = len(self.risk_model.asset_selection['top_idx'][0][:, self.factor_idx])
 
         if start_weights:
             self.start_weights = start_weights
@@ -503,7 +503,7 @@ class FactorPortfolio(Portfolio):
                                  'cov_matrix' : []}
 
         self.estimates_top = self._rolling_estimate(self.estimates_top, self.estimation_period, frequency,
-                                                    self.risk_model.risk_selection['top_idx'])
+                                                    self.risk_model.asset_selection['top_idx'])
 
         # backtest logic
         for model in models:
@@ -516,15 +516,20 @@ class FactorPortfolio(Portfolio):
             tic = time.perf_counter()
             num_rebalance = 0
 
-            for trade in range(estimation_period, self.returns.shape[0], frequency):
+            for trade in range(estimation_period, self.risk_model.returns.shape[0], frequency):
                 # solve optimization starting with start_weights
-                idx_selected_long = self.risk_model.risk_selection['top_idx'][num_rebalance][:, self.factor_idx]
-                idx_selected_short = self.risk_model.risk_selection['bottom_idx'][num_rebalance][:, self.factor_idx]
+                try:
+                    idx_selected_long = self.risk_model.asset_selection['top_idx'][num_rebalance][:, self.factor_idx]
+                    idx_selected_short = self.risk_model.asset_selection['bottom_idx'][num_rebalance][:, self.factor_idx]
+                except (KeyError, IndexError):
+                    idx_selected_long = self.risk_model.asset_selection['top_idx'][num_rebalance]
+                    idx_selected_short = self.risk_model.asset_selection['bottom_idx'][num_rebalance]
+
                 mu = self.estimates_top['exp_value'][num_rebalance]
                 sigma = self.estimates_top['cov_matrix'][num_rebalance]
                 r_est = self._get_state(trade - estimation_period, trade, idx_selected_long)
 
-                self.size = len(self.risk_model.risk_selection['top_idx'][num_rebalance][:,self.factor_idx])
+                # self.size = len(self.risk_model.asset_selection['top_idx'][num_rebalance][:, self.factor_idx])
                 #todo finish the backtest!!!
 
                 if num_rebalance == 0:
@@ -608,14 +613,19 @@ class FactorPortfolio(Portfolio):
         '''
 
         counter = 0
-        for trade in range(estimation_period, self.returns.shape[0], frequency):
+        for trade in range(estimation_period, self.risk_model.returns.shape[0], frequency):
             # estimate necessary params
-            idx_selected = security_filter[counter][:, self.factor_idx]
+            try:
+                idx_selected = security_filter[counter][:, self.factor_idx]
+            except (KeyError, IndexError):
+                idx_selected = security_filter[counter]
+
             r_est = self._get_state(trade - estimation_period, trade, idx_selected)
 
             for idx, moment in enumerate(estimates_dict.keys()):
                 estimates_dict[moment].append(self._estimate(self.estimation_method[idx],
                                                              r_est, *args, **kwargs))
+
             counter += 1
         return estimates_dict
 
@@ -625,6 +635,7 @@ class CustomPortfolio(Portfolio):
     outside of the swissknife package.
 
     '''
+    #todo implement
     def __init__(self, bt_rets: pd.DataFrame):
         '''
         :param bt_rets: backtest of the returns of the strategy: pd.DataFrame
@@ -632,7 +643,8 @@ class CustomPortfolio(Portfolio):
 
         self.backtest = bt_rets
 
-class MLPortfolio(Portfolio):
+
+class MLPortfolio(FactorPortfolio):
     '''
 
     ML Portfolio class that takes in a prespecified model and allows the user to backtest an ML strategy within the
@@ -641,18 +653,28 @@ class MLPortfolio(Portfolio):
 
     def __init__(self, universe: Portfolio, prediction_model, start_weights = None):
         self.universe = universe
-        self.returns = self.universe.returns
         self.estimation_method = [mean_return_historic, sample_cov]
-        self.dates = self.risk_model.dates
+        # self.dates = self.risk_model.dates
         self.trading_days = self.universe.trading_days
+        self.risk_model = prediction_model
+        self.returns = self.universe.returns
+        # self.returns = self.risk_model.returns.values
         self.period = self.risk_model.period
-        self.prediction_model = prediction_model
+        self.dates = self.risk_model.returns.index.to_list()
+        self.size = len(self.risk_model.asset_selection['top_idx'][0])
+        self.factor_idx = 0
 
         if start_weights:
             self.start_weights = start_weights
         else:
             self.start_weights = np.empty(self.size, dtype = float)
             self.start_weights.fill(1/self.size)
+
+
+
+
+
+
 
 
 
