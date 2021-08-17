@@ -320,6 +320,11 @@ class Portfolio(Engine):
         :param display_weights: flag for displaying weights plots: bool
         :return: None
         '''
+        # adjust benchmark and discount
+        if hasattr(self, 'benchmark'):
+            self.benchmark = self.benchmark[-self.backtest['EW']['returns'].shape[0]:]
+            self.discount = self.discount[-self.backtest['EW']['returns'].shape[0]:]
+
         #construct the dataframes
         bt_rets =  pd.DataFrame({mod : self.backtest[mod]['returns'].flatten()
                                  for mod in self.weighting_models},
@@ -328,15 +333,15 @@ class Portfolio(Engine):
                                  for mod in self.weighting_models})
         bt_gamma_mean = bt_gamma.mean()
         bt_rets_cum = (1+bt_rets).cumprod()
-        bmark_rets_cum = (1+self.benchmark[self.estimation_period:]).cumprod()
+        bmark_rets_cum = (1+self.benchmark).cumprod()
 
         #prepare weights
         w_change_all = {mod : self.backtest[mod]['w_change'] for mod in self.weighting_models}
 
         plot_returns(bt_rets_cum, bmark_rets_cum, *args, **kwargs)
 
-        stats = portfolio_summary(bt_rets, self.discount[self.estimation_period:],
-                                  self.benchmark[self.estimation_period:], w_change = w_change_all,
+        stats = portfolio_summary(bt_rets, self.discount,
+                                  self.benchmark, w_change = w_change_all,
                                   num_periods = self.trading_days, gamma = bt_gamma_mean)
         display(stats)
 
@@ -496,6 +501,7 @@ class FactorPortfolio(Portfolio):
 
         self.weighting_models = models
         self.estimation_period = estimation_period
+
         self.backtest = {}
         self.estimates_top = {'exp_value' : [],
                               'cov_matrix' : []}
@@ -504,6 +510,12 @@ class FactorPortfolio(Portfolio):
 
         self.estimates_top = self._rolling_estimate(self.estimates_top, self.estimation_period, frequency,
                                                     self.risk_model.asset_selection['top_idx'])
+
+        # HOTFIX monthly estimation
+        diff = len(self.dates) - self.estimation_period
+        while diff % len(self.risk_model.asset_selection['top_idx']) != 0:
+            diff += 1
+            self.estimation_period += 1
 
         # backtest logic
         for model in models:
@@ -516,8 +528,9 @@ class FactorPortfolio(Portfolio):
             tic = time.perf_counter()
             num_rebalance = 0
 
-            for trade in range(estimation_period, self.risk_model.returns.shape[0], frequency):
+            for trade in range(self.estimation_period, self.returns.shape[0], frequency):
                 # solve optimization starting with start_weights
+
                 try:
                     idx_selected_long = self.risk_model.asset_selection['top_idx'][num_rebalance][:, self.factor_idx]
                     idx_selected_short = self.risk_model.asset_selection['bottom_idx'][num_rebalance][:, self.factor_idx]
@@ -613,12 +626,17 @@ class FactorPortfolio(Portfolio):
         '''
 
         counter = 0
-        for trade in range(estimation_period, self.risk_model.returns.shape[0], frequency):
+        for trade in range(estimation_period, self.returns.shape[0], frequency):
             # estimate necessary params
             try:
                 idx_selected = security_filter[counter][:, self.factor_idx]
             except (KeyError, IndexError):
-                idx_selected = security_filter[counter]
+                try:
+                    idx_selected = security_filter[counter]
+                except IndexError:
+                    #this gets thrown when there is monthly data from the model and days don't check out
+                    #HOTFIX
+                    pass
 
             r_est = self._get_state(trade - estimation_period, trade, idx_selected)
 
@@ -660,7 +678,8 @@ class MLPortfolio(FactorPortfolio):
         self.returns = self.universe.returns
         # self.returns = self.risk_model.returns.values
         self.period = self.risk_model.period
-        self.dates = self.risk_model.returns.index.to_list()
+
+        self.dates = self.universe.dates
         self.size = len(self.risk_model.asset_selection['top_idx'][0])
         self.factor_idx = 0
 
