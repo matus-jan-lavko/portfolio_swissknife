@@ -25,7 +25,6 @@
     <list default="true" id="0f870dc4-abde-4567-b013-19c42890d1ea" name="Default Changelist" comment="long short">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/examples/03_ml_portfolio.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/examples/03_ml_portfolio.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
