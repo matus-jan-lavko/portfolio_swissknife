@@ -23,12 +23,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0f870dc4-abde-4567-b013-19c42890d1ea" name="Default Changelist" comment="long short">
-      <change afterPath="$PROJECT_DIR$/src/class_schematic.puml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/function_schematic.puml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/Schematic.puml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/risk_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/risk_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/03_ml_portfolio.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/examples/03_ml_portfolio.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,8 +34,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="UML Sequence" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -337,11 +333,11 @@
     </state>
     <state x="4794" y="-191" width="972" height="1086" key="dock-window-1/0.0.1707.920/3840.-191.1920.1080@0.0.1707.920" timestamp="1626695970758" />
     <state x="-5" y="0" width="864" height="925" key="dock-window-1/0.0.1707.920@0.0.1707.920" timestamp="1627506122702" />
-    <state x="554" y="200" width="672" height="678" key="search.everywhere.popup" timestamp="1627371146029">
+    <state x="554" y="200" width="672" height="678" key="search.everywhere.popup" timestamp="1628677902103">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="4463" y="-26" key="search.everywhere.popup/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624439065459" />
-    <state x="554" y="200" width="672" height="678" key="search.everywhere.popup/0.0.1707.920@0.0.1707.920" timestamp="1627371146029" />
+    <state x="554" y="200" width="672" height="678" key="search.everywhere.popup/0.0.1707.920@0.0.1707.920" timestamp="1628677902103" />
     <state x="2543" y="214" width="756" height="796" key="search.everywhere.popup/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1625211222918" />
   </component>
   <component name="XDebuggerManager">

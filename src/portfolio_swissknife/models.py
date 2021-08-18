@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from tqdm import notebook
 from .estimation import linear_factor_model
 from .plotting import plot_rolling_beta
 from .portfolio import Portfolio, Engine
@@ -170,7 +171,7 @@ class RiskModel(Engine):
         '''
 
         self.estimation_period = estimation_period
-        self.risk_selection = {'top_securities': [],
+        self.asset_selection = {'top_securities': [],
                                'bottom_securities': [],
                                'top_idx': [],
                                'bottom_idx': []}
@@ -189,10 +190,10 @@ class RiskModel(Engine):
                 top_q_names = np.array(self.portfolio.securities)[top_idx]
                 bottom_q_names = np.array(self.portfolio.securities)[bottom_idx]
 
-                self.risk_selection['top_idx'].append(top_idx)
-                self.risk_selection['bottom_idx'].append(bottom_idx)
-                self.risk_selection['top_securities'].append(top_q_names)
-                self.risk_selection['bottom_securities'].append(bottom_q_names)
+                self.asset_selection['top_idx'].append(top_idx)
+                self.asset_selection['bottom_idx'].append(bottom_idx)
+                self.asset_selection['top_securities'].append(top_q_names)
+                self.asset_selection['bottom_securities'].append(bottom_q_names)
 
         else:
             raise NotImplementedError
@@ -245,3 +246,132 @@ class RiskModel(Engine):
             raise NotImplementedError
 
         return alpha_t, beta_t, residuals_t
+
+class PredictionModel(Engine):
+    '''
+
+    A prediction model that allows the user to construct a strategy driven by a statistical model
+    '''
+
+    #needs to be decorated by datahandler
+    def __init__(self, portfolio: Portfolio):
+        self.portfolio = portfolio
+        self.features = None
+
+        #portfolio derived attributes
+        self.set_period(self.portfolio.period)
+
+    def set_prediction_model(self, function):
+        if not callable(function):
+            raise TypeError('Prediction model needs to be of type FunctionType!')
+        else:
+            self.model = function
+
+    def set_features(self, X):
+        if not self.features:
+            if isinstance(X, pd.DataFrame):
+                #time series features
+                self.features = {sec : X for sec in self.portfolio.securities}
+            elif isinstance(X, dict):
+                #panel features
+                self.features = {sec : X[sec] for sec in X.keys()}
+        else:
+            if isinstance(X, pd.DataFrame):
+                for sec in self.features.keys():
+                    merged = pd.merge(self.features[sec], X,
+                                      left_on = self.features[sec].index,
+                                      right_on = X.index,
+                                      how = 'left')
+                    merged.index = merged['key_0']
+                    merged = merged.drop('key_0', axis=1)
+                    merged = merged.fillna(method='bfill').fillna(method='ffill')
+                    self.features[sec] = merged
+            elif isinstance(X, dict):
+                for sec in self.features.keys():
+                    merged = pd.merge(self.features[sec], X[sec],
+                                      left_on=self.features[sec].index,
+                                      right_on=X[sec].index,
+                                      how='left')
+                    merged.index = merged['key_0']
+                    merged = merged.drop('key_0', axis=1)
+                    merged = merged.fillna(method='bfill').fillna(method='ffill')
+                    self.features[sec] = merged
+
+    def prepare_targets(self, features_to_merge):
+        merged = pd.merge(self.portfolio.prices, features_to_merge,
+                          left_on= self.portfolio.prices.index,
+                          right_on = features_to_merge.index,
+                          how = 'right')
+        merged.index = merged['key_0']
+        merged = merged.drop('key_0', axis=1)
+        merged = merged.fillna(method='bfill').fillna(method='ffill')
+        self.prices = merged[self.portfolio.securities]
+        self.returns = self.prices.pct_change().shift(-1).dropna()
+
+    def rolling_model_prediction(self, estimation_period = 60, window = 1, *args, **kwargs):
+        self.estimation_period = estimation_period
+        self.prediction_measure = {}
+
+        for stock in notebook.tqdm(self.portfolio.securities, desc = f'Training ML models'):
+            #get y,X
+            y_i = self.returns[stock]
+            X_i = self.features[stock][:-1].dropna(axis=1) #adjust for last return
+            X_i = X_i.loc[:, (X_i != 0).any(axis=0)].apply(lambda x: pd.to_numeric(x,downcast = 'float'))
+            X_i.replace([np.inf, -np.inf], 0, inplace = True) #fix infs
+            # print(y_i.shape, X_i.shape)
+            preds = []
+
+            #inner loop trains the model for each security
+            for trade in range(self.estimation_period, X_i.shape[0], window):
+
+                y_i_t = y_i.iloc[trade - self.estimation_period : trade]
+                X_i_t = X_i.iloc[trade - self.estimation_period : trade]
+                pred_i_t = self.model(y_i_t, X_i_t)
+                preds.append(pred_i_t)
+
+            self.prediction_measure[stock] = preds
+
+    def load_pretrained_model(self, data):
+        if not hasattr(self, 'prediction_measure'):
+            self.prediction_measure = {}
+
+        if isinstance(data, pd.DataFrame):
+            data = data.to_dict()
+
+        if isinstance(data, list):
+            for dict in data:
+                self.prediction_measure = {**self.prediction_measure, **dict}
+        else:
+            self.prediction_measure = {**self.prediction_measure, **data}
+
+
+    def rolling_spread_selection(self, percentile, window = 1):
+
+        self.prediction_measure = pd.DataFrame(self.prediction_measure)
+        self.asset_selection = {'top_securities': [],
+                               'bottom_securities': [],
+                               'top_idx': [],
+                               'bottom_idx': []}
+
+        for est in range(0, self.prediction_measure.shape[0], window):
+            sort = np.argsort(self.prediction_measure.iloc[est], axis = 0)
+            pct = int(len(self.portfolio.securities) / percentile)
+
+            top_idx = sort[-pct:]
+            bottom_idx = sort[:pct]
+            top_q_names = np.array(self.portfolio.securities)[top_idx]
+            bottom_q_names = np.array(self.portfolio.securities)[bottom_idx]
+
+            self.asset_selection['top_idx'].append(top_idx.values)
+            self.asset_selection['bottom_idx'].append(bottom_idx.values)
+            self.asset_selection['top_securities'].append(top_q_names)
+            self.asset_selection['bottom_securities'].append(bottom_q_names)
+
+
+
+
+
+
+
+
+
