@@ -29,13 +29,8 @@
     </select>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0f870dc4-abde-4567-b013-19c42890d1ea" name="Default Changelist" comment="long short">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/04_options_portfolio.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/examples/04_options_portfolio.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/plotting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/pricing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/pricing.py" afterDir="false" />
+    <list default="true" id="0f870dc4-abde-4567-b013-19c42890d1ea" name="Default Changelist" comment="added get options">
+      <change afterPath="$PROJECT_DIR$/logo.jpeg" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -247,7 +242,14 @@
       <option name="project" value="LOCAL" />
       <updated>1627245012136</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="added get options">
+      <created>1632000080198</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1632000080198</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -293,7 +295,8 @@
     <MESSAGE value="ceq and gamma" />
     <MESSAGE value="added turnover for main pf class" />
     <MESSAGE value="long short" />
-    <option name="LAST_COMMIT_MESSAGE" value="long short" />
+    <MESSAGE value="added get options" />
+    <option name="LAST_COMMIT_MESSAGE" value="added get options" />
   </component>
   <component name="WindowStateProjectService">
     <state x="2026" y="197" key="#Inspections" timestamp="1625129607239">
@@ -335,20 +338,20 @@
     <state x="4060" y="-68" key="SettingsEditor/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624441211117" />
     <state x="196" y="164" key="SettingsEditor/0.0.1707.920@0.0.1707.920" timestamp="1627371186576" />
     <state x="2140" y="172" key="SettingsEditor/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1624866437972" />
-    <state x="284" y="233" key="Vcs.Push.Dialog.v2" timestamp="1627245032577">
+    <state x="284" y="233" key="Vcs.Push.Dialog.v2" timestamp="1632000085030">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="4159" y="83" key="Vcs.Push.Dialog.v2/0.0.1707.920/3840.-191.1920.1080@3840.-191.1920.1080" timestamp="1626689628322" />
     <state x="4159" y="12" key="Vcs.Push.Dialog.v2/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624441926873" />
-    <state x="284" y="233" key="Vcs.Push.Dialog.v2/0.0.1707.920@0.0.1707.920" timestamp="1627245032577" />
+    <state x="284" y="233" key="Vcs.Push.Dialog.v2/0.0.1707.920@0.0.1707.920" timestamp="1632000085030" />
     <state x="2239" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1625752117675" />
     <state x="2239" y="237" key="Vcs.Push.Dialog.v2/1920.-21.1920.1016/0.0.1920.1016@1920.-21.1920.1016" timestamp="1625730285447" />
-    <state x="485" y="387" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1627244915892">
+    <state x="485" y="387" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1632000061233">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="4386" y="263" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1707.920/3840.-191.1920.1080@3840.-191.1920.1080" timestamp="1626689606016" />
     <state x="4385" y="193" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1707.920/3840.-261.1920.1080@3840.-261.1920.1080" timestamp="1624441910027" />
-    <state x="485" y="387" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1707.920@0.0.1707.920" timestamp="1627244915892" />
+    <state x="485" y="387" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1707.920@0.0.1707.920" timestamp="1632000061233" />
     <state x="2466" y="433" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.0.1920.1016/1920.-21.1920.1080@1920.-21.1920.1080" timestamp="1625752093535" />
     <state x="2466" y="406" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/1920.-21.1920.1016/0.0.1920.1016@1920.-21.1920.1016" timestamp="1625730242819" />
     <state x="850" y="168" width="822" height="911" key="dock-window-1" timestamp="1629635040316">
