@@ -5,6 +5,7 @@ from .estimation import linear_factor_model
 from .plotting import plot_rolling_beta
 from .portfolio import Portfolio, Engine
 from .utils import DataHandler
+from .pricing import BS_pricer
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -370,6 +371,35 @@ class PredictionModel(Engine):
             self.asset_selection['top_securities'].append(top_q_names)
             self.asset_selection['bottom_securities'].append(bottom_q_names)
 
+class OptionsStrategy(Engine):
+    def __init__(self, securities : list, start_weights = None):
+        '''
+
+        :param securities: tickers to be included in the portfolio: list of str
+        :param start_weights: optional starting weights initialized to equal weights: np array
+        '''
+        super().__init__(securities)
+        self.start_weights = start_weights
+
+class PricingModel(Engine):
+    def __init__(self, portfolio: Portfolio):
+        self.portfolio = portfolio
+        self.features = None
+
+        #portfolio derived attributes
+        self.set_period(self.portfolio.period)
+
+    def set_pricing_model(self, function, estimation_period = 252):
+        #period for estimating params
+        self.portfolio.estimation_period = estimation_period
+
+        if hasattr(function, '__call__'):
+            self.pricing_model = function
+        elif function == 'BS':
+            self.pricing_model = BS_pricer
+
+    def price_option_chain(self, *args, **kwargs):
+        self.theoretical_option_chain = self.pricing_model(self.portfolio, *args, **kwargs)
 
 
 

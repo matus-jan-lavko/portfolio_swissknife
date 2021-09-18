@@ -695,13 +695,19 @@ class MLPortfolio(FactorPortfolio):
             self.start_weights = np.empty(self.size, dtype = float)
             self.start_weights.fill(1/self.size)
 
+class OptionsPortfolio(Portfolio):
+    '''
 
+    Portfolio that allows for a probabilistic analysis of outcomes associated with a particular options strategy
+    or a combination thereof
 
+    '''
+    def __init__(self, securities):
+        super(Portfolio, self).__init__(securities)
 
-
-
-
-
+        self.strategies = []
+    def set_strategy(self, strategy):
+        pass
 
 
 
