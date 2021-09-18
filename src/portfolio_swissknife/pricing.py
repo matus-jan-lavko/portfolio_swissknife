@@ -1,6 +1,8 @@
 import numpy as np
 from collections import defaultdict
 import scipy.stats as st
+from pandas.tseries.offsets import BDay
+
 
 def BS_pricer(portfolio, tenor_periods = 24, K_std_range = 2):
     #full chain
@@ -35,11 +37,12 @@ def BS_pricer(portfolio, tenor_periods = 24, K_std_range = 2):
         vega[stock] = np.zeros([tenor_periods+1, len(K_est)])
 
         for tenor in range(1,tenor_periods+1):
-
+            #todo fix TENOR
+            T = (portfolio.dates[-1] + BDay(tenor*22) - portfolio.dates[-1]).days/365
             pricer = lambda op_type, K: BS_Option_Price(op_type, s_0[idx], K, sigma[idx],
-                                                        0, tenor * 22, portfolio.discount[-1]).flatten()
+                                                        0, T, portfolio.discount[-1]).flatten()
             delta = lambda op_type, K: BS_Delta(op_type, s_0[idx], K, sigma[idx],
-                                                0, tenor * 22, portfolio.discount[-1]).flatten()
+                                                0, T, portfolio.discount[-1]).flatten()
 
             # price options
             option_chain_call[stock][tenor, :] = pricer('call', K_est)

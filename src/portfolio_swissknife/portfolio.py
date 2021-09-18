@@ -706,6 +706,17 @@ class OptionsPortfolio(Portfolio):
         super(Portfolio, self).__init__(securities)
 
         self.strategies = []
+
+    def set_theoretical_pricing_model(self, pricing_model):
+        self.pricing_model = pricing_model
+        if self.pricing_model.theoretical_option_chain:
+            self.theoretical_option_chain = self.pricing_model.theoretical_option_chain
+        if self.pricing_model.empirical_option_chain:
+            self.empirical_option_chain = self.pricing_model.theoretical_option_chain
+
+    def plot_implied_volatility(self, ticker):
+        pass
+
     def set_strategy(self, strategy):
         pass
 

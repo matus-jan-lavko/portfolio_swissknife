@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from datetime import datetime as dt
 
 #set global style
 plt.style.use('bmh')
@@ -132,3 +133,60 @@ def _plot_stacked_weights(df, model: str, ax = None, *args, **kwargs):
     fig = plt.gcf()
     fig.tight_layout()
     return ax
+
+def plot_implied_volatility(df, s_0, op_type = None):
+    if op_type == 'call':
+        df1 = df.loc[df['call'] == 1]
+    elif op_type == 'put':
+        df1 = df.loc[df['call'] == 0]
+    else:
+        df1 = df
+
+    fig = plt.figure(1, figsize=(15, 10))
+    cols = 2
+    rows = 4 // cols
+    rows += 4 % cols
+    position = range(1, 4 + 1)
+
+
+    ax = fig.add_subplot(rows, cols, position[0])
+    ax.set_xlim(min(df1['strike']), max(df1['strike']))
+    ax.set_ylim(min(df1['impliedVolatility']), max(df1['impliedVolatility']))
+
+    ax.set_title('Short < 30d')
+    count = 0
+    for name, gr in df1.groupby('expirationDate'):
+        tenor = (name - dt.today()).days
+        grp = gr.sort_values(by='strike')
+        if tenor > 30 and count < 1:
+            count += 1
+            ax = fig.add_subplot(rows, cols, position[count])
+            ax.set_title('Medium < 90d')
+            ax.set_xlim(min(df1['strike']), max(df1['strike']))
+            ax.set_ylim(min(df1['impliedVolatility']), max(df1['impliedVolatility']))
+            legend = []
+
+        if tenor > 91 and count < 2:
+            count += 1
+            ax = fig.add_subplot(rows, cols, position[count])
+            ax.set_title('Long < 252d')
+            ax.set_xlim(min(df1['strike']), max(df1['strike']))
+            ax.set_ylim(min(df1['impliedVolatility']), max(df1['impliedVolatility']))
+
+            legend = []
+        if tenor > 252 and count < 3:
+            count += 1
+            ax = fig.add_subplot(rows, cols, position[count])
+            ax.set_title('Very long > 252d')
+            ax.set_xlim(min(df1['strike']), max(df1['strike']))
+            ax.set_ylim(min(df1['impliedVolatility']), max(df1['impliedVolatility']))
+
+            legend = []
+
+        ax.scatter(grp['strike'], grp['impliedVolatility'], s=15)
+        ax.plot(grp['strike'], grp['impliedVolatility'], linewidth=0.5, label='_nolegend_')
+
+        legend.append(name.strftime('%d-%b-%Y'))
+        ax.axvline(s_0[0], color='black', linewidth=1.4, alpha=0.7, linestyle='--', label='_nolegend_')
+        ax.legend(legend)
+

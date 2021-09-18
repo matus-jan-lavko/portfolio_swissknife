@@ -19,16 +19,23 @@
         <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </expand>
-    <select />
+    <select>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:origin/options_portfolio" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </select>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0f870dc4-abde-4567-b013-19c42890d1ea" name="Default Changelist" comment="long short">
-      <change afterPath="$PROJECT_DIR$/examples/04_options_portfolio.ipynb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/portfolio_swissknife/pricing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples/.ipynb_checkpoints/01_simple_backtest-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/examples/.ipynb_checkpoints/01_simple_backtest-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/04_options_portfolio.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/examples/04_options_portfolio.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/plotting.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/portfolio.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/portfolio_swissknife/pricing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/portfolio_swissknife/pricing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -248,7 +255,19 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/options_portfolio" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>

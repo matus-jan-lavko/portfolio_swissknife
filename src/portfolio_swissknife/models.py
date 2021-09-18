@@ -7,6 +7,12 @@ from .portfolio import Portfolio, Engine
 from .utils import DataHandler
 from .pricing import BS_pricer
 
+from collections import defaultdict
+import yfinance as yf
+from tqdm import tqdm
+
+from datetime import datetime as dt
+from datetime import timedelta
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
@@ -371,16 +377,6 @@ class PredictionModel(Engine):
             self.asset_selection['top_securities'].append(top_q_names)
             self.asset_selection['bottom_securities'].append(bottom_q_names)
 
-class OptionsStrategy(Engine):
-    def __init__(self, securities : list, start_weights = None):
-        '''
-
-        :param securities: tickers to be included in the portfolio: list of str
-        :param start_weights: optional starting weights initialized to equal weights: np array
-        '''
-        super().__init__(securities)
-        self.start_weights = start_weights
-
 class PricingModel(Engine):
     def __init__(self, portfolio: Portfolio):
         self.portfolio = portfolio
@@ -388,6 +384,48 @@ class PricingModel(Engine):
 
         #portfolio derived attributes
         self.set_period(self.portfolio.period)
+
+    def get_options_data(self, std_range = 2):
+        '''
+        Retrieves empirical options data scraped from yahoo finance
+        Adapted from: https://medium.com/@txlian13/webscrapping-options-data-with-python-and-yfinance-e4deb0124613
+        credit to Tony Lian
+
+
+        '''
+        self.empirical_option_chain = defaultdict(dict)
+
+        for idx, ticker in tqdm(enumerate(self.portfolio.securities), desc = f'Downloading options chain.'):
+            tick = yf.Ticker(ticker)
+            expirations = tick.options
+
+            options = pd.DataFrame()
+            for e in expirations:
+                opt = tick.option_chain(e)
+                opt = pd.DataFrame().append(opt.calls).append(opt.puts)
+                opt['expirationDate'] = e
+                options = options.append(opt, ignore_index=True)
+
+            #fix bug that gives wrong expiry
+            options['expirationDate'] = pd.to_datetime(options['expirationDate']) + timedelta(days=1)
+            options['dte'] = (options['expirationDate'] - dt.today()).dt.days / 365
+
+            #call flag
+            options['call'] = options['contractSymbol'].str[4:].apply(lambda x: "C" in x)
+            options[['bid', 'ask', 'strike']] = options[['bid', 'ask', 'strike']].apply(pd.to_numeric)
+            options['mid'] = (options['bid'] + options['ask']) / 2
+            options = options.drop(
+                columns=['contractSize', 'currency', 'change', 'percentChange', 'lastTradeDate', 'lastPrice'])
+
+            #clean a little bit
+            s_0 = self.portfolio.prices.iloc[-1,:].values
+            sigma = np.std(self.portfolio.returns[:, -252:],0)*np.sqrt(252)
+            options_d = options.loc[options['strike'] < s_0[idx] + std_range*sigma[idx]*s_0[idx]]
+            options_d = options_d.loc[options_d['strike'] > s_0[idx] - std_range * sigma[idx] * s_0[idx]]
+            options_d = options_d.loc[options_d['impliedVolatility'] > 0.001]
+            options_d = options_d.loc[options_d['volume'] > 2]
+
+            self.empirical_option_chain[ticker] = options_d
 
     def set_pricing_model(self, function, estimation_period = 252):
         #period for estimating params
@@ -398,10 +436,21 @@ class PricingModel(Engine):
         elif function == 'BS':
             self.pricing_model = BS_pricer
 
-    def price_option_chain(self, *args, **kwargs):
+    def price_theoretical_option_chain(self, *args, **kwargs):
         self.theoretical_option_chain = self.pricing_model(self.portfolio, *args, **kwargs)
 
 
+
+
+class OptionsStrategy(Engine):
+    def __init__(self, securities : list, start_weights = None):
+        '''
+
+        :param securities: tickers to be included in the portfolio: list of str
+        :param start_weights: optional starting weights initialized to equal weights: np array
+        '''
+        super().__init__(securities)
+        self.start_weights = start_weights
 
 
 
